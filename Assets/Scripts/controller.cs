@@ -40,11 +40,7 @@ public class SimpleUnderwaterMovement : MonoBehaviour
         float descend = descendAction.IsPressed() ? 1f : 0f;
         bool sprinting = sprintAction.IsPressed();
 
-        Transform reference;
-        if (cameraTransform != null)
-            reference = cameraTransform;
-        else
-            reference = transform;
+        Transform reference = cameraTransform != null ? cameraTransform : transform;
 
         Vector3 forward = reference.forward;
         forward.y = 0f;
@@ -63,11 +59,14 @@ public class SimpleUnderwaterMovement : MonoBehaviour
 
         controller.Move(movement * Time.deltaTime);
 
-        // Rotation uniquement si le mouvement horizontal est significatif
-        if (horizontal.sqrMagnitude > 0.001f)
+        if (moveInput.y > 0.01f || Mathf.Abs(moveInput.x) > 0.01f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(horizontal.normalized, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+            Vector3 lookDir = horizontal;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.Slerp(transform.rotation,
+                                                      Quaternion.LookRotation(lookDir.normalized, Vector3.up),
+                                                      10f * Time.deltaTime);
         }
     }
 }
