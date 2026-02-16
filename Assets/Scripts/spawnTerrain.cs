@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿// ================= InfiniteTerrainManager =================
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InfiniteTerrainManager : MonoBehaviour
@@ -9,6 +10,7 @@ public class InfiniteTerrainManager : MonoBehaviour
     public GameObject chunkPrefab;
     public POIRegistry poiRegistry;
 
+    // Chunks actifs
     private Dictionary<Vector2Int, GameObject> activeChunks = new();
     private Queue<GameObject> chunkPool = new();
     private Vector2Int currentChunkCoord;
@@ -111,17 +113,64 @@ public class InfiniteTerrainManager : MonoBehaviour
     {
         if (!activePOIs.Contains(coord))
         {
-            if (activeChunks.ContainsKey(coord))
+            GameObject poiInstance = poiRegistry.GetInstance(coord);
+            if (poiInstance != null)
             {
-                // Désactiver le chunk standard pour ce coord
+                poiInstance.SetActive(true);
+            }
+
+            // On ne désactive le chunk que si ce n'est pas un POI spécial comme le bassin
+            if (activeChunks.ContainsKey(coord) && poiInstance != null)
+            {
                 var chunk = activeChunks[coord];
                 chunk.SetActive(false);
                 chunkPool.Enqueue(chunk);
                 activeChunks.Remove(coord);
             }
 
-            poiRegistry.Activate(coord);
             activePOIs.Add(coord);
         }
+    }
+
+    // ===== Helpers pour POIRegistry =====
+    public bool ActiveChunksContains(Vector2Int coord) => activeChunks.ContainsKey(coord);
+    public GameObject GetActiveChunk(Vector2Int coord)
+    {
+        if (activeChunks.TryGetValue(coord, out var chunk))
+            return chunk;
+        return null;
+    }
+
+    // Nouvelle méthode pour obtenir la hauteur de surface d'un chunk adjacent
+    public float GetAdjacentTerrainSurfaceHeight(Vector2Int poiCoord)
+    {
+        // Chercher un chunk adjacent (par exemple au nord)
+        Vector2Int[] adjacentCoords = new Vector2Int[]
+        {
+            new Vector2Int(poiCoord.x, poiCoord.y + 1), // Nord
+            new Vector2Int(poiCoord.x, poiCoord.y - 1), // Sud
+            new Vector2Int(poiCoord.x + 1, poiCoord.y), // Est
+            new Vector2Int(poiCoord.x - 1, poiCoord.y)  // Ouest
+        };
+
+        foreach (var coord in adjacentCoords)
+        {
+            if (activeChunks.TryGetValue(coord, out GameObject chunk))
+            {
+                Terrain terrain = chunk.GetComponent<Terrain>();
+                if (terrain != null)
+                {
+                    // Échantillonner au centre du terrain
+                    int centerX = terrain.terrainData.heightmapResolution / 2;
+                    int centerZ = terrain.terrainData.heightmapResolution / 2;
+                    float sampledHeight = terrain.terrainData.GetHeight(centerX, centerZ);
+
+                    return terrain.transform.position.y + sampledHeight;
+                }
+            }
+        }
+
+        // Si aucun chunk adjacent n'est trouvé, retourner 0
+        return 0f;
     }
 }

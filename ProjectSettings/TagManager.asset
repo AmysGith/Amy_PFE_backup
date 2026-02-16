@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - POI
+  - Bassin
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - sand
   - Water
   - UI
   - 
