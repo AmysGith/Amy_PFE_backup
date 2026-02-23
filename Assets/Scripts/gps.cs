@@ -1,15 +1,15 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class MiniMap : MonoBehaviour
 {
-    [Header("Références")]
-    public Transform player;                 // Le joueur à suivre
+    [Header("RÃ©fÃ©rences")]
+    public Transform player;                 // Le joueur Ã  suivre
     public RectTransform mapRect;            // RectTransform de la map UI
-    public GameObject playerIconPrefab;      // Icône du joueur
-    public GameObject poiIconPrefab;         // Icône des POIs
-    public POIRegistry poiRegistry;          // Référence au POIRegistry
-    public float worldToMapScale = 1f;       // Échelle conversion monde -> map
+    public GameObject playerIconPrefab;      // IcÃ´ne du joueur
+    public GameObject poiIconPrefab;         // IcÃ´ne des POIs
+    public POIRegistry poiRegistry;          // RÃ©fÃ©rence au POIRegistry
+    public float worldToMapScale = 1f;       // Ã‰chelle conversion monde -> map
 
     private RectTransform playerIcon;
     private Dictionary<Vector2Int, RectTransform> poiIcons = new Dictionary<Vector2Int, RectTransform>();
@@ -18,17 +18,17 @@ public class MiniMap : MonoBehaviour
     {
         if (mapRect == null)
         {
-            Debug.LogError("MiniMap : mapRect non assigné !");
+            Debug.LogError("MiniMap : mapRect non assignÃ© !");
             return;
         }
 
-        // Crée l'icône joueur
+        // CrÃ©e l'icÃ´ne joueur
         if (playerIconPrefab != null)
         {
             playerIcon = Instantiate(playerIconPrefab, mapRect).GetComponent<RectTransform>();
         }
 
-        // Crée les icônes pour TOUS les POIs
+        // CrÃ©e les icÃ´nes pour TOUS les POIs
         if (poiRegistry != null && poiIconPrefab != null)
         {
             foreach (var kv in poiRegistry.GetAllPOIs())
@@ -36,10 +36,10 @@ public class MiniMap : MonoBehaviour
                 Vector2Int chunkCoord = kv.Key;
                 string regionName = kv.Value;
 
-                // Instancie l'icône
+                // Instancie l'icÃ´ne
                 RectTransform icon = Instantiate(poiIconPrefab, mapRect).GetComponent<RectTransform>();
 
-                // Calcule la position sur la map en prenant la taille du chunk et l'échelle
+                // Calcule la position sur la map en prenant la taille du chunk et l'Ã©chelle
                 Vector2 anchoredPos = new Vector2(
                     chunkCoord.x * 50 * worldToMapScale,  // 50 = chunkSize
                     chunkCoord.y * 50 * worldToMapScale
@@ -50,7 +50,7 @@ public class MiniMap : MonoBehaviour
 
                 poiIcons[chunkCoord] = icon;
 
-                Debug.Log($"MiniMap : POI '{regionName}' affiché à {anchoredPos}");
+                Debug.Log($"MiniMap : POI '{regionName}' affichÃ© Ã  {anchoredPos}");
             }
         }
     }
@@ -66,7 +66,7 @@ public class MiniMap : MonoBehaviour
         );
         playerIcon.anchoredPosition = playerMapPos;
 
-        // Rotation de l'icône joueur pour suivre l'orientation du joueur
+        // Rotation de l'icÃ´ne joueur pour suivre l'orientation du joueur
         playerIcon.localRotation = Quaternion.Euler(0f, 0f, -player.eulerAngles.y);
     }
 }
