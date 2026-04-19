@@ -1,0 +1,254 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7984205478627806947
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1532499762901223448}
+  - component: {fileID: 3499930193254981264}
+  - component: {fileID: 1339351768793208532}
+  - component: {fileID: 5294317412807242243}
+  m_Layer: 0
+  m_Name: base 2 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1532499762901223448
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7984205478627806947}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -17, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!218 &3499930193254981264
+Terrain:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7984205478627806947}
+  m_Enabled: 1
+  serializedVersion: 6
+  m_TerrainData: {fileID: 15600000, guid: 16e40b55d7470784dadd9ce907c66532, type: 2}
+  m_TreeDistance: 5000
+  m_TreeBillboardDistance: 50
+  m_TreeCrossFadeLength: 5
+  m_TreeMaximumFullLODCount: 50
+  m_DetailObjectDistance: 80
+  m_DetailObjectDensity: 1
+  m_HeightmapPixelError: 15
+  m_SplatMapDistance: 50
+  m_HeightmapMinimumLODSimplification: 0
+  m_HeightmapMaximumLOD: 0
+  m_ShadowCastingMode: 0
+  m_DrawHeightmap: 1
+  m_DrawInstanced: 1
+  m_DrawTreesAndFoliage: 1
+  m_StaticShadowCaster: 0
+  m_IgnoreQualitySettings: 0
+  m_ReflectionProbeUsage: 0
+  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  m_BakeLightProbesForTrees: 1
+  m_PreserveTreePrototypeLayers: 0
+  m_DeringLightProbesForTrees: 1
+  m_ReceiveGI: 1
+  m_ScaleInLightmap: 0.0256
+  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
+  m_GroupingID: 0
+  m_RenderingLayerMask: 1
+  m_AllowAutoConnect: 1
+  m_EnableHeightmapRayTracing: 1
+  m_EnableTreesAndDetailsRayTracing: 0
+  m_TreeMotionVectorModeOverride: 3
+--- !u!154 &1339351768793208532
+TerrainCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7984205478627806947}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_TerrainData: {fileID: 15600000, guid: 16e40b55d7470784dadd9ce907c66532, type: 2}
+  m_EnableTreeColliders: 1
+--- !u!114 &5294317412807242243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7984205478627806947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe01aad2254918144ab64d52db0ac08d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  poiRegistry: {fileID: 0}
+  terrainManager: {fileID: 0}
+  worldSeed: 1337
+  objects:
+  - label: Algues
+    meshes:
+    - {fileID: 7676182117928911150, guid: 8a7a0aef942572f428aec7657804c827, type: 3}
+    - {fileID: 46604309741045415, guid: ef2d8307ea69f0f4ab93d4f07041a44e, type: 3}
+    material: {fileID: 2100000, guid: 8d2b7af24086a83409945ed10bcfe657, type: 2}
+    count: 10
+    scaleMinMax: {x: 1, y: 1.1}
+    rotationMinMax: {x: 1, y: 1.1}
+    alignToSurface: 1
+    usePerlinDensity: 1
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: 0, y: 0, z: 0}
+  - label: Rock
+    meshes:
+    - {fileID: 2289415448551767133, guid: 2c5fe446668d34147ac86478e7985ddb, type: 3}
+    material: {fileID: 2100000, guid: 63a5d0dfe1e05514cb2facd51a1292de, type: 2}
+    count: 10
+    scaleMinMax: {x: 0.2, y: 0.3}
+    rotationMinMax: {x: 0.2, y: 0.3}
+    alignToSurface: 1
+    usePerlinDensity: 1
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: 0, y: 0, z: 0}
+  - label: Corail
+    meshes:
+    - {fileID: -2678200808768954665, guid: aa634823e072c8645b4935ccf25a9423, type: 3}
+    material: {fileID: 2100000, guid: 3177ecbcb8f29184cb537eb78a890f95, type: 2}
+    count: 10
+    scaleMinMax: {x: 25, y: 30}
+    rotationMinMax: {x: 25, y: 30}
+    alignToSurface: 0
+    usePerlinDensity: 1
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: 0, y: 0, z: 0}
+  - label: Corail
+    meshes:
+    - {fileID: -5257580638339434780, guid: aa634823e072c8645b4935ccf25a9423, type: 3}
+    material: {fileID: 2100000, guid: 936b2fe906597024680b6f6a3c09a6dd, type: 2}
+    count: 10
+    scaleMinMax: {x: 25, y: 25}
+    rotationMinMax: {x: 25, y: 25}
+    alignToSurface: 0
+    usePerlinDensity: 1
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: 0, y: 0, z: 0}
+  - label: Corail
+    meshes:
+    - {fileID: -7122770539524534428, guid: aa634823e072c8645b4935ccf25a9423, type: 3}
+    material: {fileID: 2100000, guid: 15687f1b745999d4ca72c0a2cbf6fd15, type: 2}
+    count: 10
+    scaleMinMax: {x: 25, y: 25}
+    rotationMinMax: {x: 20, y: 25}
+    alignToSurface: 0
+    usePerlinDensity: 1
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: 0, y: 0, z: 0}
+  - label: starfish
+    meshes:
+    - {fileID: -3194780947581505845, guid: 9859a389f26f82f4b8e93753944f6168, type: 3}
+    material: {fileID: 2100000, guid: f25c9f3f023c71c468c1bd0ff16ab448, type: 2}
+    count: 10
+    scaleMinMax: {x: 25, y: 25}
+    rotationMinMax: {x: 20, y: 25}
+    alignToSurface: 0
+    usePerlinDensity: 1
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: 0, y: 0, z: 0}
+  - label: algue2
+    meshes:
+    - {fileID: 46604309741045415, guid: ef2d8307ea69f0f4ab93d4f07041a44e, type: 3}
+    material: {fileID: 2100000, guid: 01a5e02f6993f724280b33cb63e7fbc1, type: 2}
+    count: 10
+    scaleMinMax: {x: 25, y: 25}
+    rotationMinMax: {x: 0, y: 0}
+    alignToSurface: 1
+    usePerlinDensity: 0
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: -90, y: -90, z: -90}
+  - label: corail2
+    meshes:
+    - {fileID: 5461320835613783329, guid: b2f8f3d6d85a31e448d4f993faa7e029, type: 3}
+    material: {fileID: 2100000, guid: 01a5e02f6993f724280b33cb63e7fbc1, type: 2}
+    count: 2
+    scaleMinMax: {x: 4, y: 5}
+    rotationMinMax: {x: 0, y: 0}
+    alignToSurface: 1
+    usePerlinDensity: 1
+    perlinFrequency: 0.12
+    perlinDensityMinMax: {x: 0.2, y: 1.3}
+    useClusters: 1
+    clustersPerChunk: 6
+    clusterRadius: 4
+    clusterWeight: 0.85
+    snapYawTo90: 1
+    baseRotation: {x: 0, y: 0, z: 0}
+  lodFarDistance: 80
+  lodMidDistance: 40
+  lodMidDensity: 0.4
+  chunkSize: 50
+  boundsHeight: 30

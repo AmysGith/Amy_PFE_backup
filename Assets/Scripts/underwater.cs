@@ -99,6 +99,7 @@ public class Underwater : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
+        if (renderingData.cameraData.cameraType != CameraType.Game) return;
         renderer.EnqueuePass(pass);
     }
 

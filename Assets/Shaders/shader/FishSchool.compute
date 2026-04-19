@@ -1,0 +1,187 @@
+﻿#pragma kernel ClearGrid
+#pragma kernel BuildGrid
+#pragma kernel CSMain
+
+struct Fish
+{
+    float3 pos;
+    float3 vel;
+    float yaw;
+    float pitch;
+    float colorIndex;
+};
+
+RWStructuredBuffer<Fish> _Fish;
+RWStructuredBuffer<int> _CellCount;
+RWStructuredBuffer<int> _CellIndices;
+
+int _FishCount;
+int _MaxPerCell;
+
+float _DeltaTime;
+float _Speed;
+
+float _SeparationWeight;
+float _AlignmentWeight;
+float _CohesionWeight;
+
+float3 _ZoneCenter;
+float _ZoneRadius;
+
+float _CellSize;
+int _GridDimX;
+int _GridDimY;
+int _GridDimZ;
+
+// ─── GRID HELPERS ───────────────────────────────────────────
+
+int3 WorldToCell(float3 pos)
+{
+    float
+    half= _ZoneRadius;
+    float3 local = pos - (_ZoneCenter - float3(
+    half, 
+    half, 
+    half));
+
+    return int3(
+        clamp((int) (local.x / _CellSize), 0, _GridDimX - 1),
+        clamp((int) (local.y / _CellSize), 0, _GridDimY - 1),
+        clamp((int) (local.z / _CellSize), 0, _GridDimZ - 1)
+    );
+}
+
+int CellIndex(int3 c)
+{
+    return c.x + c.y * _GridDimX + c.z * _GridDimX * _GridDimY;
+}
+
+// ─── KERNELS ────────────────────────────────────────────────
+
+[numthreads(64, 1, 1)]
+void ClearGrid(uint3 id : SV_DispatchThreadID)
+{
+    int i = (int) id.x;
+    if (i >= _GridDimX * _GridDimY * _GridDimZ)
+        return;
+    _CellCount[i] = 0;
+}
+
+[numthreads(64, 1, 1)]
+void BuildGrid(uint3 id : SV_DispatchThreadID)
+{
+    int i = (int) id.x;
+    if (i >= _FishCount)
+        return;
+
+    int3 cell = WorldToCell(_Fish[i].pos);
+    int ci = CellIndex(cell);
+
+    int index;
+    InterlockedAdd(_CellCount[ci], 1, index);
+    if (index < _MaxPerCell)
+        _CellIndices[ci * _MaxPerCell + index] = i;
+}
+
+[numthreads(64, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    int i = (int) id.x;
+    if (i >= _FishCount)
+        return;
+
+    Fish f = _Fish[i];
+    int3 myCell = WorldToCell(f.pos);
+
+    float3 sep = float3(0, 0, 0);
+    float3 ali = float3(0, 0, 0);
+    float3 coh = float3(0, 0, 0);
+    int nSep = 0, nAli = 0, nCoh = 0;
+
+    // ── VOISINS VIA GRILLE ──────────────────────────────────
+    for (int dz = -1; dz <= 1; dz++)
+        for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                int3 nc = myCell + int3(dx, dy, dz);
+                if (nc.x < 0 || nc.x >= _GridDimX ||
+            nc.y < 0 || nc.y >= _GridDimY ||
+            nc.z < 0 || nc.z >= _GridDimZ)
+                    continue;
+
+                int ci = CellIndex(nc);
+                int count = min(_CellCount[ci], _MaxPerCell);
+
+                for (int k = 0; k < count; k++)
+                {
+                    int j = _CellIndices[ci * _MaxPerCell + k];
+                    if (j == i)
+                        continue;
+
+                    float3 diff = _Fish[j].pos - f.pos;
+                    float d = length(diff) + 0.0001;
+
+                    if (d < 2.0)
+                    {
+                        sep -= diff / d;
+                        nSep++;
+                    }
+                    if (d < 5.0)
+                    {
+                        ali += _Fish[j].vel;
+                        nAli++;
+                    }
+                    if (d < 8.0)
+                    {
+                        coh += _Fish[j].pos;
+                        nCoh++;
+                    }
+                }
+            }
+
+    // ── BOIDS ───────────────────────────────────────────────
+    float3 desired = f.vel;
+
+    if (nSep > 0)
+        desired += (sep / nSep) * _SeparationWeight;
+    if (nAli > 0)
+        desired += (ali / nAli) * _AlignmentWeight;
+    if (nCoh > 0)
+        desired += ((coh / nCoh) - f.pos) / 8.0 * _CohesionWeight;
+
+    // ── CONFINEMENT SPHÉRIQUE (comme le second système) ─────
+    float3 toCenter = _ZoneCenter - f.pos;
+    if (length(toCenter) > _ZoneRadius)
+        desired += normalize(toCenter) * 2.0;
+
+    // ── STABILITÉ VERTICALE ──────────────────────────────────
+    desired.y *= 0.2;
+
+    float spd = length(desired);
+    if (spd > 0.001)
+        desired = (desired / spd) * _Speed;
+    else
+        desired = float3(sin(f.yaw), 0, cos(f.yaw)) * _Speed;
+
+    // ── LISSAGE ──────────────────────────────────────────────
+    f.vel = lerp(f.vel, desired, _DeltaTime * 2.0);
+
+    // ── YAW / PITCH (depuis le second système) ───────────────
+    float targetYaw = atan2(f.vel.x, f.vel.z);
+    float targetPitch = atan2(-f.vel.y, length(f.vel.xz));
+
+    float dyaw = targetYaw - f.yaw;
+    if (dyaw > 3.14159)
+        dyaw -= 6.28318;
+    if (dyaw < -3.14159)
+        dyaw += 6.28318;
+
+    f.yaw += dyaw * _DeltaTime * 3.0;
+    f.pitch = lerp(f.pitch, targetPitch, _DeltaTime * 2.0);
+
+    // ── POSITION ─────────────────────────────────────────────
+    f.pos += f.vel * _DeltaTime;
+
+    // ── WRITE ────────────────────────────────────────────────
+    _Fish[i] = f;
+}

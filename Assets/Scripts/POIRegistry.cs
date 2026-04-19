@@ -29,6 +29,7 @@ public class POIRegistry : MonoBehaviour
     public List<POIRegion> regions = new List<POIRegion>();
     private Dictionary<Vector2Int, StaticPOI> pois;
 
+    public InfiniteTerrainManager terrainManager;
     private void Awake()
     {
         if (poiRoot == null)
@@ -103,19 +104,41 @@ public class POIRegistry : MonoBehaviour
         return new StaticPOI { coord = coord, prefab = prefab, instance = instance };
     }
 
-    public bool HasPOI(Vector2Int coord) => pois.ContainsKey(coord);
+    public bool HasPOI(Vector2Int coord) => pois != null && pois.ContainsKey(coord);
 
-    public GameObject GetInstance(Vector2Int coord) => pois.ContainsKey(coord) ? pois[coord].instance : null;
+    public GameObject GetInstance(Vector2Int coord) => pois != null && pois.ContainsKey(coord) ? pois[coord].instance : null;
 
     public void Activate(Vector2Int coord)
     {
-        if (pois.ContainsKey(coord))
-            pois[coord].instance.SetActive(true);
+        if (pois != null && pois.ContainsKey(coord))
+        {
+            var instance = pois[coord].instance;
+
+            var pop = instance.GetComponent<POIPopulator>();
+            if (pop != null) pop.Init(coord, terrainManager);
+
+            var trigger = instance.GetComponentInChildren<POIVisitTrigger>();
+            if (trigger == null)
+            {
+                var go = new GameObject("VisitTrigger");
+                go.transform.SetParent(instance.transform, false);
+                go.transform.localPosition = new Vector3(25f, 10f, 25f);
+
+                var col = go.AddComponent<BoxCollider>();
+                col.isTrigger = true;
+                col.size = new Vector3(50f, 20f, 50f);
+
+                trigger = go.AddComponent<POIVisitTrigger>();
+            }
+
+            trigger.coord = coord;
+            instance.SetActive(true);
+        }
     }
 
     public void Deactivate(Vector2Int coord)
     {
-        if (pois.ContainsKey(coord))
+        if (pois != null && pois.ContainsKey(coord))
             pois[coord].instance.SetActive(false);
     }
 

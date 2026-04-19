@@ -4,69 +4,57 @@ using UnityEngine;
 public class MiniMap : MonoBehaviour
 {
     [Header("Références")]
-    public Transform player;                 // Le joueur à suivre
-    public RectTransform mapRect;            // RectTransform de la map UI
-    public GameObject playerIconPrefab;      // Icône du joueur
-    public GameObject poiIconPrefab;         // Icône des POIs
-    public POIRegistry poiRegistry;          // Référence au POIRegistry
-    public float worldToMapScale = 1f;       // Échelle conversion monde -> map
+    public Transform player;
+    public POIRegistry poiRegistry;
 
-    private RectTransform playerIcon;
-    private Dictionary<Vector2Int, RectTransform> poiIcons = new Dictionary<Vector2Int, RectTransform>();
+    [Header("Radar settings")]
+    public float chunkSize = 50f;
+    public float radarRange = 300f; // distance max affichée = bord du radar
+    public float updateRate = 0.1f;
+
+    private float timer;
 
     void Start()
     {
-        if (mapRect == null)
-        {
-            Debug.LogError("MiniMap : mapRect non assigné !");
-            return;
-        }
-
-        // Crée l'icône joueur
-        if (playerIconPrefab != null)
-        {
-            playerIcon = Instantiate(playerIconPrefab, mapRect).GetComponent<RectTransform>();
-        }
-
-        // Crée les icônes pour TOUS les POIs
-        if (poiRegistry != null && poiIconPrefab != null)
-        {
-            foreach (var kv in poiRegistry.GetAllPOIs())
-            {
-                Vector2Int chunkCoord = kv.Key;
-                string regionName = kv.Value;
-
-                // Instancie l'icône
-                RectTransform icon = Instantiate(poiIconPrefab, mapRect).GetComponent<RectTransform>();
-
-                // Calcule la position sur la map en prenant la taille du chunk et l'échelle
-                Vector2 anchoredPos = new Vector2(
-                    chunkCoord.x * 50 * worldToMapScale,  // 50 = chunkSize
-                    chunkCoord.y * 50 * worldToMapScale
-                );
-
-                icon.anchoredPosition = anchoredPos;
-                icon.name = $"POI_{regionName}_{chunkCoord.x}_{chunkCoord.y}";
-
-                poiIcons[chunkCoord] = icon;
-
-                Debug.Log($"MiniMap : POI '{regionName}' affiché à {anchoredPos}");
-            }
-        }
+        Debug.Log("MiniMap OLED START OK");
     }
 
     void Update()
     {
-        if (player == null || playerIcon == null) return;
+        if (player == null || ArduinoManager.Instance == null || poiRegistry == null)
+            return;
 
-        // Position du joueur sur la map
-        Vector2 playerMapPos = new Vector2(
-            player.position.x * worldToMapScale,
-            player.position.z * worldToMapScale
-        );
-        playerIcon.anchoredPosition = playerMapPos;
 
-        // Rotation de l'icône joueur pour suivre l'orientation du joueur
-        playerIcon.localRotation = Quaternion.Euler(0f, 0f, -player.eulerAngles.y);
+        Debug.Log($"player={player != null} | arduino={ArduinoManager.Instance != null} | poi={poiRegistry != null}");
+        timer += Time.deltaTime;
+        if (timer < updateRate) return;
+        timer = 0;
+
+        // ── HEADER ───────────────────────────
+        string msg = $"A:{player.eulerAngles.y:F1}|S:{radarRange:F0}";
+        int count = 0;
+
+        // ── POI ──────────────────────────────
+        foreach (var kv in poiRegistry.GetAllPOIs())
+        {
+            if (count >= 5) break;
+
+            Vector2Int chunk = kv.Key;
+
+            Vector3 worldPos = new Vector3(
+                chunk.x * chunkSize,
+                0f,
+                chunk.y * chunkSize
+            );
+
+            Vector3 diff = worldPos - player.position;
+
+            // pas de radarScale ici, l'Arduino s'en charge avec S:
+            msg += $"|P:{diff.x:F0},{diff.z:F0}";
+            count++;
+        }
+
+        ArduinoManager.Instance.SendRadar(msg);
+        Debug.Log($"RADAR SEND ({count} POIs) → " + msg);
     }
 }

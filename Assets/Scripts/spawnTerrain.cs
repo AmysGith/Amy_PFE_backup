@@ -1,5 +1,4 @@
-﻿// ================= InfiniteTerrainManager =================
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class InfiniteTerrainManager : MonoBehaviour
@@ -9,80 +8,116 @@ public class InfiniteTerrainManager : MonoBehaviour
     public int renderDistance = 2;
     public GameObject chunkPrefab;
     public POIRegistry poiRegistry;
+    public WorldBounds worldBounds;
 
-    // Chunks actifs
     private Dictionary<Vector2Int, GameObject> activeChunks = new();
     private Queue<GameObject> chunkPool = new();
     private Vector2Int currentChunkCoord;
     private HashSet<Vector2Int> activePOIs = new();
 
+    private readonly Plane[] cachedFrustumPlanes = new Plane[6];
+    public Plane[] FrustumPlanes => cachedFrustumPlanes;
+
     private void Start()
     {
         currentChunkCoord = GetPlayerChunkCoord();
-        UpdateChunks();
+
+        if (Camera.main != null)
+            GeometryUtility.CalculateFrustumPlanes(Camera.main, cachedFrustumPlanes);
+
+        UpdateChunksWithRadius(renderDistance + 1);
     }
 
     private void Update()
     {
+        if (Camera.main != null)
+            GeometryUtility.CalculateFrustumPlanes(Camera.main, cachedFrustumPlanes);
+
         Vector2Int newChunkCoord = GetPlayerChunkCoord();
+
         if (newChunkCoord != currentChunkCoord)
         {
             currentChunkCoord = newChunkCoord;
-            UpdateChunks();
+
+            if (!IsPlayerAtBounds())
+                UpdateChunks();
         }
     }
 
     private Vector2Int GetPlayerChunkCoord()
     {
-        float px = player.position.x + chunkSize * 0.5f;
-        float pz = player.position.z + chunkSize * 0.5f;
-
-        int cx = Mathf.FloorToInt(px / chunkSize);
-        int cz = Mathf.FloorToInt(pz / chunkSize);
-
-        return new Vector2Int(cx, cz);
+        return new Vector2Int(
+            Mathf.FloorToInt(player.position.x / chunkSize),
+            Mathf.FloorToInt(player.position.z / chunkSize)
+        );
     }
 
-    private void UpdateChunks()
+    private bool IsPlayerAtBounds()
+    {
+        if (worldBounds == null) return false;
+
+        Vector2Int coord = currentChunkCoord;
+
+        return coord.x <= worldBounds.MinChunkX ||
+               coord.x >= worldBounds.MaxChunkX ||
+               coord.y <= worldBounds.MinChunkZ ||
+               coord.y >= worldBounds.MaxChunkZ;
+    }
+
+    private bool IsWithinBounds(Vector2Int coord)
+    {
+        if (worldBounds == null) return true;
+
+        return coord.x >= worldBounds.MinChunkX &&
+               coord.x <= worldBounds.MaxChunkX &&
+               coord.y >= worldBounds.MinChunkZ &&
+               coord.y <= worldBounds.MaxChunkZ;
+    }
+
+    private void UpdateChunks() => UpdateChunksWithRadius(renderDistance);
+
+    private void UpdateChunksWithRadius(int radius)
     {
         HashSet<Vector2Int> needed = new();
 
-        for (int x = -renderDistance; x <= renderDistance; x++)
+        for (int x = -radius; x <= radius; x++)
         {
-            for (int z = -renderDistance; z <= renderDistance; z++)
+            for (int z = -radius; z <= radius; z++)
             {
                 Vector2Int coord = new(currentChunkCoord.x + x, currentChunkCoord.y + z);
+
+                if (!IsWithinBounds(coord))
+                    continue;
+
                 needed.Add(coord);
 
                 if (poiRegistry != null && poiRegistry.HasPOI(coord))
-                {
                     ActivatePOI(coord);
-                }
                 else if (!activeChunks.ContainsKey(coord))
-                {
                     SpawnChunk(coord);
-                }
             }
         }
 
-        // Désactivation des chunks inutiles
         List<Vector2Int> toRemove = new();
+
         foreach (var kvp in activeChunks)
         {
             if (!needed.Contains(kvp.Key))
             {
+                kvp.Value.GetComponent<ChunkPopulator>()?.Clear();
                 kvp.Value.SetActive(false);
                 chunkPool.Enqueue(kvp.Value);
                 toRemove.Add(kvp.Key);
             }
         }
+
         foreach (var coord in toRemove)
             activeChunks.Remove(coord);
 
-        // Désactivation des POIs trop loin
         if (poiRegistry != null)
         {
             List<Vector2Int> poisToDeactivate = new();
+
             foreach (var coord in activePOIs)
             {
                 if (!needed.Contains(coord))
@@ -91,6 +126,7 @@ public class InfiniteTerrainManager : MonoBehaviour
                     poisToDeactivate.Add(coord);
                 }
             }
+
             foreach (var coord in poisToDeactivate)
                 activePOIs.Remove(coord);
         }
@@ -99,30 +135,39 @@ public class InfiniteTerrainManager : MonoBehaviour
     private void SpawnChunk(Vector2Int coord)
     {
         GameObject chunk;
+
         if (chunkPool.Count > 0)
             chunk = chunkPool.Dequeue();
         else
             chunk = Instantiate(chunkPrefab);
 
-        chunk.transform.position = new Vector3(coord.x * chunkSize, 0f, coord.y * chunkSize);
+        chunk.transform.position = new Vector3(
+            coord.x * chunkSize,
+            0f,
+            coord.y * chunkSize
+        );
+
         chunk.SetActive(true);
         activeChunks.Add(coord, chunk);
+
+        var populator = chunk.GetComponent<ChunkPopulator>();
+        if (populator != null)
+        {
+            populator.terrainManager = this;
+            populator.Init(coord, poiRegistry);
+        }
     }
 
     private void ActivatePOI(Vector2Int coord)
     {
         if (!activePOIs.Contains(coord))
         {
-            GameObject poiInstance = poiRegistry.GetInstance(coord);
-            if (poiInstance != null)
-            {
-                poiInstance.SetActive(true);
-            }
+            poiRegistry.Activate(coord);
 
-            // On ne désactive le chunk que si ce n'est pas un POI spécial comme le bassin
-            if (activeChunks.ContainsKey(coord) && poiInstance != null)
+            if (activeChunks.ContainsKey(coord))
             {
                 var chunk = activeChunks[coord];
+                chunk.GetComponent<ChunkPopulator>()?.Clear();
                 chunk.SetActive(false);
                 chunkPool.Enqueue(chunk);
                 activeChunks.Remove(coord);
@@ -132,25 +177,23 @@ public class InfiniteTerrainManager : MonoBehaviour
         }
     }
 
-    // ===== Helpers pour POIRegistry =====
-    public bool ActiveChunksContains(Vector2Int coord) => activeChunks.ContainsKey(coord);
+    public bool ActiveChunksContains(Vector2Int coord)
+        => activeChunks.ContainsKey(coord);
+
     public GameObject GetActiveChunk(Vector2Int coord)
     {
-        if (activeChunks.TryGetValue(coord, out var chunk))
-            return chunk;
-        return null;
+        activeChunks.TryGetValue(coord, out var chunk);
+        return chunk;
     }
 
-    // Nouvelle méthode pour obtenir la hauteur de surface d'un chunk adjacent
     public float GetAdjacentTerrainSurfaceHeight(Vector2Int poiCoord)
     {
-        // Chercher un chunk adjacent (par exemple au nord)
-        Vector2Int[] adjacentCoords = new Vector2Int[]
+        Vector2Int[] adjacentCoords =
         {
-            new Vector2Int(poiCoord.x, poiCoord.y + 1), // Nord
-            new Vector2Int(poiCoord.x, poiCoord.y - 1), // Sud
-            new Vector2Int(poiCoord.x + 1, poiCoord.y), // Est
-            new Vector2Int(poiCoord.x - 1, poiCoord.y)  // Ouest
+            new(poiCoord.x, poiCoord.y + 1),
+            new(poiCoord.x, poiCoord.y - 1),
+            new(poiCoord.x + 1, poiCoord.y),
+            new(poiCoord.x - 1, poiCoord.y)
         };
 
         foreach (var coord in adjacentCoords)
@@ -160,17 +203,15 @@ public class InfiniteTerrainManager : MonoBehaviour
                 Terrain terrain = chunk.GetComponent<Terrain>();
                 if (terrain != null)
                 {
-                    // Échantillonner au centre du terrain
-                    int centerX = terrain.terrainData.heightmapResolution / 2;
-                    int centerZ = terrain.terrainData.heightmapResolution / 2;
-                    float sampledHeight = terrain.terrainData.GetHeight(centerX, centerZ);
+                    int cx = terrain.terrainData.heightmapResolution / 2;
+                    int cz = terrain.terrainData.heightmapResolution / 2;
 
-                    return terrain.transform.position.y + sampledHeight;
+                    return terrain.transform.position.y +
+                           terrain.terrainData.GetHeight(cx, cz);
                 }
             }
         }
 
-        // Si aucun chunk adjacent n'est trouvé, retourner 0
         return 0f;
     }
 }

@@ -69,7 +69,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 253eb3d58616cdc449d447ca7c10dba6, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0a006a58d5d1a2c4994b8e0e78889102, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -128,7 +128,7 @@ Material:
     - _Surface: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
-    - _alpha: 0
+    - _alpha: 0.604
     - _dis: 10
     - _refraction: 0.5
     m_Colors:
@@ -136,6 +136,6 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _color: {r: 0.836478, g: 0.22358674, b: 0.44330242, a: 0}
+    - _color: {r: 0.20469908, g: 0.192, b: 0.453, a: 0}
     - _normalUV: {r: 1, g: 1, b: 0.2, a: 0.1}
   m_BuildTextureStacks: []
