@@ -96,10 +96,7 @@ public class ArduinoManager : MonoBehaviour
                     }
                 }
 
-                // =========================
-                // RADAR FROM UNITY (IGNORED HERE)
-                // =========================
-                // (Arduino le traite dans son propre code)
+                
             }
             catch (System.TimeoutException) { }
             catch (System.Exception e)

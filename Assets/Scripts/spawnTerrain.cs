@@ -38,9 +38,7 @@ public class InfiniteTerrainManager : MonoBehaviour
         if (newChunkCoord != currentChunkCoord)
         {
             currentChunkCoord = newChunkCoord;
-
-            if (!IsPlayerAtBounds())
-                UpdateChunks();
+            UpdateChunks(); // IsWithinBounds filtre déjà chunk par chunk
         }
     }
 
@@ -50,18 +48,6 @@ public class InfiniteTerrainManager : MonoBehaviour
             Mathf.FloorToInt(player.position.x / chunkSize),
             Mathf.FloorToInt(player.position.z / chunkSize)
         );
-    }
-
-    private bool IsPlayerAtBounds()
-    {
-        if (worldBounds == null) return false;
-
-        Vector2Int coord = currentChunkCoord;
-
-        return coord.x <= worldBounds.MinChunkX ||
-               coord.x >= worldBounds.MaxChunkX ||
-               coord.y <= worldBounds.MinChunkZ ||
-               coord.y >= worldBounds.MaxChunkZ;
     }
 
     private bool IsWithinBounds(Vector2Int coord)

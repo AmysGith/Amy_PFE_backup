@@ -59,12 +59,12 @@ public class WorldBounds : MonoBehaviour
         // Est
         SpawnWall(wallRoot.transform, "Wall_East",
             new Vector3(worldMaxX + wallThickness * 0.5f, wallHeight * 0.5f, centerZ),
-            new Vector3(wallThickness, wallHeight, sizeZ));
+            new Vector3(wallThickness, wallHeight, sizeZ + wallThickness * 2f)); // ← même logique que Nord/Sud
 
         // Ouest
         SpawnWall(wallRoot.transform, "Wall_West",
             new Vector3(worldMinX - wallThickness * 0.5f, wallHeight * 0.5f, centerZ),
-            new Vector3(wallThickness, wallHeight, sizeZ));
+            new Vector3(wallThickness, wallHeight, sizeZ + wallThickness * 2f));
     }
 
     private void SpawnWall(Transform parent, string wallName, Vector3 position, Vector3 size)

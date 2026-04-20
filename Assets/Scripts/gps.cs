@@ -25,7 +25,7 @@ public class MiniMap : MonoBehaviour
             return;
 
 
-        Debug.Log($"player={player != null} | arduino={ArduinoManager.Instance != null} | poi={poiRegistry != null}");
+        //Debug.Log($"player={player != null} | arduino={ArduinoManager.Instance != null} | poi={poiRegistry != null}");
         timer += Time.deltaTime;
         if (timer < updateRate) return;
         timer = 0;
@@ -55,6 +55,6 @@ public class MiniMap : MonoBehaviour
         }
 
         ArduinoManager.Instance.SendRadar(msg);
-        Debug.Log($"RADAR SEND ({count} POIs) → " + msg);
+        //Debug.Log($"RADAR SEND ({count} POIs) → " + msg);
     }
 }
