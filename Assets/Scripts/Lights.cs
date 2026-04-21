@@ -2,25 +2,41 @@
 
 public class FirstPersonHeadlights : MonoBehaviour
 {
+    [Header("Lumières")]
     public Light leftLight;
     public Light rightLight;
-    public Transform cameraTransform;
 
+    // Fallback clavier si Arduino non connecté
+    [Header("Fallback clavier")]
+    public bool allowKeyboardFallback = true;
 
-    bool isOn = false;
+    private bool _isOn = false;
+    private bool _prevSwitchState = false;
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.L))
+        bool switchOn = false;
+        bool arduinoAvailable = ArduinoManager.Instance != null;
+
+        if (arduinoAvailable)
         {
-            isOn = !isOn;
-            leftLight.enabled = isOn;
-            rightLight.enabled = isOn;
+            switchOn = ArduinoManager.Instance.SwitchOn;
+
+            // On allume/éteint uniquement sur changement d'état du switch
+            if (switchOn != _prevSwitchState)
+            {
+                _isOn = switchOn;
+                _prevSwitchState = switchOn;
+            }
         }
 
-        if (!isOn) return;
+        // Fallback clavier L si Arduino absent ou option activée
+        if (allowKeyboardFallback && Input.GetKeyDown(KeyCode.L))
+        {
+            _isOn = !_isOn;
+        }
 
-
+        leftLight.enabled = _isOn;
+        rightLight.enabled = _isOn;
     }
-
 }

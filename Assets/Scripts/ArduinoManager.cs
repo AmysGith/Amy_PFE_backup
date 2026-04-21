@@ -2,6 +2,9 @@
 using System.Threading;
 using UnityEngine;
 
+
+// Dans Update(), remplace les 2 lignes QuitPressed par :
+
 public class ArduinoManager : MonoBehaviour
 {
     public static ArduinoManager Instance { get; private set; }
@@ -15,6 +18,9 @@ public class ArduinoManager : MonoBehaviour
     public bool ButtonPressed { get; private set; }
     public bool ButtonDown { get; private set; }
 
+    // ── INPUT SWITCH ───────────────────────
+    public bool SwitchOn { get; private set; } = false;
+
     private bool _btnPrev;
 
     // ── SERIAL ─────────────────────────────
@@ -26,6 +32,12 @@ public class ArduinoManager : MonoBehaviour
 
     private string _pendingDir = "NEUTRE";
     private bool _pendingBtn;
+    private bool _pendingSwitch;
+
+    private bool _pendingQuit;
+    public bool QuitPressed { get; private set; }
+
+    public event System.Action OnQuitPressed;
 
     void Awake()
     {
@@ -67,13 +79,10 @@ public class ArduinoManager : MonoBehaviour
 
                 line = line.Trim();
 
-                // =========================
-                // JOYSTICK FROM ARDUINO
-                // =========================
+                // ── JOYSTICK ──
                 if (line.StartsWith("JOY|"))
                 {
                     string[] parts = line.Split('|');
-
                     if (parts.Length >= 3)
                     {
                         string dir = "NEUTRE";
@@ -81,11 +90,8 @@ public class ArduinoManager : MonoBehaviour
 
                         foreach (string p in parts)
                         {
-                            if (p.StartsWith("DIR:"))
-                                dir = p.Substring(4);
-
-                            if (p.StartsWith("BTN:"))
-                                btn = p.Substring(4) == "APPUYE";
+                            if (p.StartsWith("DIR:")) dir = p.Substring(4);
+                            if (p.StartsWith("BTN:")) btn = p.Substring(4) == "APPUYE";
                         }
 
                         lock (_lock)
@@ -96,7 +102,21 @@ public class ArduinoManager : MonoBehaviour
                     }
                 }
 
-                
+                // ── SWITCH LUMIÈRES ──
+                else if (line.StartsWith("SWITCH|"))
+                {
+                    string val = line.Substring(7).Trim();
+
+                    lock (_lock)
+                    {
+                        _pendingSwitch = (val == "1");
+                    }
+                }
+
+                else if (line == "QUIT")
+                {
+                    lock (_lock) { _pendingQuit = true; }
+                }
             }
             catch (System.TimeoutException) { }
             catch (System.Exception e)
@@ -115,11 +135,25 @@ public class ArduinoManager : MonoBehaviour
             Direction = _pendingDir;
 
             bool current = _pendingBtn;
-
             ButtonDown = current && !_btnPrev;
             ButtonPressed = current;
-
             _btnPrev = current;
+
+            SwitchOn = _pendingSwitch;
+            // QUIT géré dans OnGUI maintenant
+        }
+    }
+
+    void OnGUI()
+    {
+        lock (_lock)
+        {
+            if (_pendingQuit)
+            {
+                Debug.Log("OnQuitPressed invoqué !");
+                _pendingQuit = false;
+                OnQuitPressed?.Invoke();
+            }
         }
     }
 
@@ -128,14 +162,8 @@ public class ArduinoManager : MonoBehaviour
     {
         if (_serial != null && _serial.IsOpen)
         {
-            try
-            {
-                _serial.WriteLine("RADAR|" + msg);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning("SendRadar error: " + e.Message);
-            }
+            try { _serial.WriteLine("RADAR|" + msg); }
+            catch (System.Exception e) { Debug.LogWarning("SendRadar error: " + e.Message); }
         }
     }
 
@@ -143,16 +171,21 @@ public class ArduinoManager : MonoBehaviour
     void OnApplicationQuit()
     {
         _running = false;
-
-        if (_thread != null && _thread.IsAlive)
-            _thread.Join(200);
-
-        if (_serial != null && _serial.IsOpen)
-            _serial.Close();
+        if (_thread != null && _thread.IsAlive) _thread.Join(200);
+        if (_serial != null && _serial.IsOpen) _serial.Close();
     }
 
-    void OnDestroy()
+    void OnDestroy() { _running = false; }
+
+    public void SendLCD(string msg)
     {
-        _running = false;
+        if (_serial != null && _serial.IsOpen)
+        {
+            try { _serial.WriteLine("LCD|" + msg); }
+            catch (System.Exception e) { Debug.LogWarning("SendLCD error: " + e.Message); }
+        }
     }
+
+    
+
 }

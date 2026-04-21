@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,10 +6,10 @@ public class GameCompletionManager : MonoBehaviour
 {
     public static GameCompletionManager Instance { get; private set; }
 
-    [Header("Références")]
+    [Header("RÃ©fÃ©rences")]
     public POIRegistry poiRegistry;
 
-    [Header("Scène de destination")]
+    [Header("ScÃ¨ne de destination")]
     public string menuSceneName = "Menu";
 
     [Header("UI optionnelle")]
@@ -27,20 +27,23 @@ public class GameCompletionManager : MonoBehaviour
 
     private void Start()
     {
-        // GetAllPOIs() est déjà dans POIRegistry, on lit juste le count
         totalPOIs = poiRegistry.GetAllPOIs().Count;
-        Debug.Log($"[Completion] {totalPOIs} POIs à visiter.");
+        Debug.Log($"[Completion] {totalPOIs} POIs Ã  visiter.");
+
+        // On envoie le total via ArduinoManager
+        ArduinoManager.Instance?.SendLCD($"INIT,{totalPOIs}");
+
         UpdateProgressUI();
     }
 
     public void NotifyPOIVisited(Vector2Int coord)
     {
         if (gameEnded) return;
-
         if (visitedPOIs.Add(coord))
         {
             Debug.Log($"[Completion] {visitedPOIs.Count}/{totalPOIs}");
             UpdateProgressUI();
+            ArduinoManager.Instance?.SendLCD("1");
 
             if (visitedPOIs.Count >= totalPOIs)
                 TriggerGameEnd();
@@ -58,6 +61,6 @@ public class GameCompletionManager : MonoBehaviour
     private void UpdateProgressUI()
     {
         if (progressLabel != null)
-            progressLabel.text = $"{visitedPOIs.Count} / {totalPOIs} lieux visités";
+            progressLabel.text = $"{visitedPOIs.Count} / {totalPOIs} lieux visitÃ©s";
     }
 }
