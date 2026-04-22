@@ -72,7 +72,6 @@ public class ChunkPopulator : MonoBehaviour
         mainCam = Camera.main;
         terrain = GetComponent<Terrain>();
         if (terrain != null) tData = terrain.terrainData;
-        RebuildChunkBounds();
     }
 
     private void OnEnable()

@@ -9,13 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd68b336314eed14590147a51705043c, type: 3}
+  m_Script: {fileID: 11500000, guid: b0796441b370ff744ba2ee408ec50726, type: 3}
   m_Name: DepthFogRenderFeature
   m_EditorClassIdentifier: 
   m_Active: 1
   settings:
-    renderPassEvent: 550
-    shader: {fileID: 4800000, guid: 3e57e7cd96fd0274fbd0f565e999e546, type: 3}
+    material: {fileID: 0}
+    renderPassEvent: 400
+    color: {r: 0.1, g: 0.5, b: 0.6, a: 1}
+    distance: 10
+    alpha: 0.3
+    refraction: 0.1
+    normalmap: {fileID: 0}
+    UV: {x: 1, y: 1, z: 0.2, w: 0.1}
 --- !u!114 &-8359347788477477801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38,6 +44,28 @@ MonoBehaviour:
     refraction: 0.5
     normalmap: {fileID: 2800000, guid: 0a006a58d5d1a2c4994b8e0e78889102, type: 3}
     UV: {x: 1, y: 1, z: 0.2, w: 0.1}
+--- !u!114 &-1447401975493859816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0796441b370ff744ba2ee408ec50726, type: 3}
+  m_Name: Underwater
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    material: {fileID: 2100000, guid: bd6fdd1f65490bc44a11fcb9bed1ede7, type: 2}
+    renderPassEvent: 400
+    color: {r: 0.1, g: 0.5, b: 0.6, a: 1}
+    distance: 10
+    alpha: 0.23
+    refraction: 1.32
+    normalmap: {fileID: 2800000, guid: 0a006a58d5d1a2c4994b8e0e78889102, type: 3}
+    UV: {x: 1.5, y: 1.5, z: 0.05, w: 0.05}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54,8 +82,8 @@ MonoBehaviour:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
-  - {fileID: -8359347788477477801}
-  m_RendererFeatureMap: 574cdae179a1fd8b
+  - {fileID: -1447401975493859816}
+  m_RendererFeatureMap: 18667d6b92cbe9eb
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}

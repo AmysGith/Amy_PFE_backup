@@ -1,146 +1,57 @@
-﻿using System.Collections;
-using UnityEngine;
-
-[RequireComponent(typeof(SphereCollider))]
-public class CoralBleachingController : MonoBehaviour
+﻿using UnityEngine;
+public class SimplePOIBleach : MonoBehaviour
 {
-    [Header("Références")]
-    public POIPopulator populator;
-    public ParticleSystem mucusParticles;
+    public Transform player;
+    public float radius = 10f;
 
-    [Header("Zones")]
-    public float triggerRadius = 25f;
-    public float bleachStartRadius = 15f;
+    private POIPopulator targetPOI;
+    private Vector3 chunkCenter;
+    private Vector3 chunkMin;
+    private Vector3 chunkMax;
 
-    [Header("Timing")]
-    public float bleachInDuration = 8f;
-    public float bleachOutDuration = 12f;
-
-    [Header("Particules")]
-    [Range(0f, 1f)]
-    public float particleThreshold = 0.4f;
-
-    // ── Etat ─────────────────────────────────────────────────────────────────
-    private float bleachProgress;
-    private bool playerInside;
-    private Transform playerTransform;
-    private Coroutine bleachCoroutine;
-
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void Awake()
+    void Start()
     {
-        var col = GetComponent<SphereCollider>();
-        col.isTrigger = true;
-        col.radius = triggerRadius;
-        col.center = new Vector3(25f, 0f, 25f);
-
-        if (populator == null)
-            populator = GetComponent<POIPopulator>();
-    }
-
-
-    private void OnEnable()
-    {
-        bleachProgress = 0f;
-        playerInside = false;
-        UpdateBleach(0f);
-        if (mucusParticles != null) mucusParticles.Stop();
-    }
-
-    private void OnDisable()
-    {
-        if (bleachCoroutine != null) StopCoroutine(bleachCoroutine);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Trigger
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void OnTriggerEnter(Collider other)
-    {
-        Debug.Log("Collider détecté: " + other.name + " tag: " + other.tag + " root: " + other.transform.root.name);
-
-        Transform root = other.transform.root;
-        if (!root.CompareTag("Player")) return;
-
-        playerTransform = root;
-        playerInside = true;
-
-        if (bleachCoroutine != null) StopCoroutine(bleachCoroutine);
-        bleachCoroutine = StartCoroutine(BleachIn());
-    }
-
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("Player")) return;
-        playerInside = false;
-
-        if (bleachCoroutine != null) StopCoroutine(bleachCoroutine);
-        bleachCoroutine = StartCoroutine(BleachOut());
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Coroutines
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private IEnumerator BleachIn()
-    {
-        while (bleachProgress < 1f)
+        POIRegistry registry = FindObjectOfType<POIRegistry>();
+        foreach (var kvp in registry.GetAllPOIs())
         {
-            float proximity = 1f;
-            if (playerTransform != null)
+            GameObject instance = registry.GetInstance(kvp.Key);
+            if (instance != null && instance.name.Contains("coraux"))
             {
-                Vector3 chunkCenter = transform.position + new Vector3(25f, 0f, 25f);
-                float dist = Vector3.Distance(playerTransform.position, chunkCenter);
-                proximity = Mathf.Max(0.1f, 1f - Mathf.Clamp01(dist / bleachStartRadius));
+                targetPOI = instance.GetComponent<POIPopulator>();
+                break;
             }
-
-            bleachProgress = Mathf.MoveTowards(
-                bleachProgress, 1f,
-                (1f / bleachInDuration) * proximity * Time.deltaTime);
-
-            UpdateBleach(bleachProgress);
-            yield return null;
         }
+
+        if (targetPOI == null)
+        {
+            UnityEngine.Debug.LogError("POI_coraux introuvable !");
+            return;
+        }
+
+        Vector3 origin = targetPOI.transform.position;
+        float halfSize = targetPOI.chunkSize * 0.5f;
+        chunkCenter = origin + new Vector3(halfSize, 0f, halfSize);
+        chunkMin = origin;
+        chunkMax = origin + new Vector3(targetPOI.chunkSize, 9999f, targetPOI.chunkSize);
+
+        UnityEngine.Debug.Log($"chunkCenter: {chunkCenter} | chunkMin: {chunkMin} | chunkMax: {chunkMax}");
     }
 
-    private IEnumerator BleachOut()
+    void Update()
     {
-        while (bleachProgress > 0f)
+        if (targetPOI == null || player == null) return;
+
+        bool playerInChunk = player.position.x >= chunkMin.x && player.position.x <= chunkMax.x &&
+                             player.position.z >= chunkMin.z && player.position.z <= chunkMax.z;
+
+        if (!playerInChunk)
         {
-            bleachProgress = Mathf.MoveTowards(
-                bleachProgress, 0f,
-                (1f / bleachOutDuration) * Time.deltaTime);
-
-            UpdateBleach(bleachProgress);
-            yield return null;
+            targetPOI.bleachProgress = 0f;
+            return;
         }
-    }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Mise à jour shader + particules
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void UpdateBleach(float progress)
-    {
-        if (populator != null)
-            populator.SetBleachProgress(progress);
-
-        if (mucusParticles == null) return;
-
-        if (progress >= particleThreshold && !mucusParticles.isPlaying)
-            mucusParticles.Play();
-        else if (progress < particleThreshold && mucusParticles.isPlaying)
-            mucusParticles.Stop();
-
-        if (mucusParticles.isPlaying)
-        {
-            var emission = mucusParticles.emission;
-            emission.rateOverTime = Mathf.Lerp(
-                0f, 80f,
-                (progress - particleThreshold) / (1f - particleThreshold));
-        }
+        float dist = Vector3.Distance(new Vector3(player.position.x, 0f, player.position.z),
+                                      new Vector3(chunkCenter.x, 0f, chunkCenter.z));
+        targetPOI.bleachProgress = dist <= radius ? 1f : 0f;
     }
 }

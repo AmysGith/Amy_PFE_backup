@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4547260835889770012
+--- !u!1 &5433004310006519177
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,26 +8,26 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7699250166614599310}
-  - component: {fileID: 1621237685505844808}
-  - component: {fileID: 8551947779368557884}
-  - component: {fileID: 8274105549816158580}
-  - component: {fileID: 3935580087083484450}
-  - component: {fileID: 5857305888472437553}
+  - component: {fileID: 4422323052880898288}
+  - component: {fileID: 4339336668573157158}
+  - component: {fileID: 6323579511741306671}
+  - component: {fileID: 6175569619862609007}
+  - component: {fileID: 7104805659315771010}
+  - component: {fileID: -8298319893800941733}
   m_Layer: 0
-  m_Name: POI_Banc
+  m_Name: POI_coraux
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
   m_IsActive: 1
---- !u!4 &7699250166614599310
+--- !u!4 &4422323052880898288
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4547260835889770012}
+  m_GameObject: {fileID: 5433004310006519177}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -5.5, y: 0, z: 0}
@@ -36,13 +36,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!218 &1621237685505844808
+--- !u!218 &4339336668573157158
 Terrain:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4547260835889770012}
+  m_GameObject: {fileID: 5433004310006519177}
   m_Enabled: 1
   serializedVersion: 6
   m_TerrainData: {fileID: 15600000, guid: f4a654d4cfb6c0a489632148369cbdca, type: 2}
@@ -76,13 +76,13 @@ Terrain:
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
   m_TreeMotionVectorModeOverride: 3
---- !u!154 &8551947779368557884
+--- !u!154 &6323579511741306671
 TerrainCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4547260835889770012}
+  m_GameObject: {fileID: 5433004310006519177}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -96,13 +96,13 @@ TerrainCollider:
   serializedVersion: 2
   m_TerrainData: {fileID: 15600000, guid: f4a654d4cfb6c0a489632148369cbdca, type: 2}
   m_EnableTreeColliders: 1
---- !u!135 &8274105549816158580
+--- !u!135 &6175569619862609007
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4547260835889770012}
+  m_GameObject: {fileID: 5433004310006519177}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -116,14 +116,14 @@ SphereCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.5
-  m_Center: {x: 25, y: 5, z: 25}
---- !u!54 &3935580087083484450
+  m_Center: {x: 25, y: 0, z: 25}
+--- !u!54 &7104805659315771010
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4547260835889770012}
+  m_GameObject: {fileID: 5433004310006519177}
   serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
@@ -144,29 +144,61 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &5857305888472437553
+--- !u!114 &-8298319893800941733
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4547260835889770012}
+  m_GameObject: {fileID: 5433004310006519177}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7becaab21c376c4bb6a573b07bbd0a9, type: 3}
+  m_Script: {fileID: 11500000, guid: 00c7031fa9775ad48bdb6b67c2c4792e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  computeShader: {fileID: 7200000, guid: 804a30fe3a4c41c42978c6a420e69164, type: 3}
-  fishMesh: {fileID: -6924101709930977177, guid: 140d2156695081c439a0965a94e5bdd5, type: 3}
-  fishMaterial: {fileID: 2100000, guid: ad1b44e0147b14558b8ca365bbda74df, type: 2}
-  fishCount: 300
-  speed: 3.5
-  separationWeight: 1.5
-  alignmentWeight: 1
-  cohesionWeight: 0.8
-  spawnRadius: 25
-  simulationRadius: 32
-  cellSize: 3
-  maxPerCell: 32
-  terrain: {fileID: 1621237685505844808}
-  minSwimHeight: 1.5
+  terrainManager: {fileID: 0}
+  objects:
+  - label: BigCoral
+    meshes:
+    - {fileID: 5461320835613783329, guid: b2f8f3d6d85a31e448d4f993faa7e029, type: 3}
+    material: {fileID: 2100000, guid: 936b2fe906597024680b6f6a3c09a6dd, type: 2}
+    count: 5
+    scaleMinMax: {x: 2, y: 5}
+    rotationMinMax: {x: 0, y: 0}
+    alignToSurface: 0
+    usePerlinDensity: 0
+    perlinFrequency: 0
+    perlinDensityMinMax: {x: 0, y: 0}
+    useClusters: 0
+    clustersPerChunk: 0
+    clusterRadius: 0
+    clusterWeight: 0
+    snapYawTo90: 0
+    baseRotation: {x: 0, y: 0, z: 0}
+  - label: Coraux1
+    meshes:
+    - {fileID: 1803717800030214448, guid: e4a9b79cf31746d48a6c936b00ccd815, type: 3}
+    - {fileID: 8654070266593911294, guid: e4a9b79cf31746d48a6c936b00ccd815, type: 3}
+    - {fileID: -4679952110961492691, guid: e4a9b79cf31746d48a6c936b00ccd815, type: 3}
+    material: {fileID: 2100000, guid: 15687f1b745999d4ca72c0a2cbf6fd15, type: 2}
+    count: 5
+    scaleMinMax: {x: 2, y: 5}
+    rotationMinMax: {x: 0, y: 0}
+    alignToSurface: 1
+    usePerlinDensity: 0
+    perlinFrequency: 0
+    perlinDensityMinMax: {x: 0, y: 0}
+    useClusters: 0
+    clustersPerChunk: 0
+    clusterRadius: 0
+    clusterWeight: 0
+    snapYawTo90: 0
+    baseRotation: {x: 0, y: 0, z: 0}
+  worldSeed: 1337
+  lodFarDistance: 80
+  lodMidDistance: 40
+  lodMidDensity: 0.4
+  chunkSize: 50
+  boundsHeight: 30
+  isBleachablePOI: 1
+  bleachProgress: 0

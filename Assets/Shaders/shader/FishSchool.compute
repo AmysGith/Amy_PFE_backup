@@ -33,16 +33,14 @@ int _GridDimX;
 int _GridDimY;
 int _GridDimZ;
 
+float _MinSwimHeight;
+
 // ─── GRID HELPERS ───────────────────────────────────────────
 
 int3 WorldToCell(float3 pos)
 {
-    float
-    half= _ZoneRadius;
-    float3 local = pos - (_ZoneCenter - float3(
-    half, 
-    half, 
-    half));
+    float halfR = _ZoneRadius;
+    float3 local = pos - (_ZoneCenter - float3(halfR, halfR, halfR));
 
     return int3(
         clamp((int) (local.x / _CellSize), 0, _GridDimX - 1),
@@ -105,8 +103,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
             {
                 int3 nc = myCell + int3(dx, dy, dz);
                 if (nc.x < 0 || nc.x >= _GridDimX ||
-            nc.y < 0 || nc.y >= _GridDimY ||
-            nc.z < 0 || nc.z >= _GridDimZ)
+                    nc.y < 0 || nc.y >= _GridDimY ||
+                    nc.z < 0 || nc.z >= _GridDimZ)
                     continue;
 
                 int ci = CellIndex(nc);
@@ -149,7 +147,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     if (nCoh > 0)
         desired += ((coh / nCoh) - f.pos) / 8.0 * _CohesionWeight;
 
-    // ── CONFINEMENT SPHÉRIQUE (comme le second système) ─────
+    // ── CONFINEMENT SPHÉRIQUE ────────────────────────────────
     float3 toCenter = _ZoneCenter - f.pos;
     if (length(toCenter) > _ZoneRadius)
         desired += normalize(toCenter) * 2.0;
@@ -166,9 +164,9 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     // ── LISSAGE ──────────────────────────────────────────────
     f.vel = lerp(f.vel, desired, _DeltaTime * 2.0);
 
-    // ── YAW / PITCH (depuis le second système) ───────────────
+    // ── YAW / PITCH ──────────────────────────────────────────
     float targetYaw = atan2(f.vel.x, f.vel.z);
-    float targetPitch = atan2(-f.vel.y, length(f.vel.xz));
+    float targetPitch = atan2(-f.vel.y, length(float2(f.vel.x, f.vel.z))); // corrigé : .xz → float2
 
     float dyaw = targetYaw - f.yaw;
     if (dyaw > 3.14159)

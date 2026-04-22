@@ -1,5 +1,11 @@
 Shader "Custom/FishInstancedIndirect"
 {
+    Properties
+    {
+    _FlipX        ("Flip X",         Float) = 0
+    _FlipY        ("Flip Y",         Float) = 0
+    _RotCorrection("Rot Correction", Float) = 0
+    }
     SubShader
     {
         Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }

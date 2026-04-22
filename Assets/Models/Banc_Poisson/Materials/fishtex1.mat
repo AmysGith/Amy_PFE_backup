@@ -97,6 +97,8 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+    - _FlipX: 0
+    - _FlipY: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -106,6 +108,7 @@ Material:
     - _Parallax: 0.02
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RotCorrection: 3.14159
     - _Smoothness: 0.906
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
