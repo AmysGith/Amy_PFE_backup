@@ -51,7 +51,6 @@ public class POIRegistry : MonoBehaviour
             new POIRegion { regionName = "Est", minChunk = new Vector2Int(2, -1), maxChunk = new Vector2Int(4, 1) },
             new POIRegion { regionName = "Sud", minChunk = new Vector2Int(-1, -4), maxChunk = new Vector2Int(1, -2) },
             new POIRegion { regionName = "Ouest", minChunk = new Vector2Int(-4, -1), maxChunk = new Vector2Int(-2, 1) },
-            new POIRegion { regionName = "Sud-Ouest", minChunk = new Vector2Int(3, 3), maxChunk = new Vector2Int(5, 5) }
         };
     }
 
@@ -96,7 +95,7 @@ public class POIRegistry : MonoBehaviour
 
         float posX = coord.x * CHUNK_SIZE;
         float posZ = coord.y * CHUNK_SIZE;
-        float posY = (prefab.name.ToLower() == "bassin") ? -12.5f : 12.5f;
+        float posY = 12.5f; 
 
         instance.transform.position = new Vector3(posX, posY, posZ);
         instance.SetActive(false);

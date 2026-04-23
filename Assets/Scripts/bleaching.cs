@@ -34,7 +34,7 @@ public class SimplePOIBleach : MonoBehaviour
         chunkMin = origin;
         chunkMax = origin + new Vector3(targetPOI.chunkSize, 9999f, targetPOI.chunkSize);
 
-        UnityEngine.Debug.Log($"chunkCenter: {chunkCenter} | chunkMin: {chunkMin} | chunkMax: {chunkMax}");
+        //UnityEngine.Debug.Log($"chunkCenter: {chunkCenter} | chunkMin: {chunkMin} | chunkMax: {chunkMax}");
     }
 
     void Update()

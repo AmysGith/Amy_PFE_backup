@@ -12,29 +12,70 @@ public class WorldBounds : MonoBehaviour
     [SerializeField] private float wallHeight = 100f;
     [SerializeField] private float wallThickness = 10f;
 
+    [Header("Player & Proximity")]
+    [SerializeField] private Transform player;
+    [SerializeField] private float warningDistance = 50f;  // → orange fixe
+    [SerializeField] private float dangerDistance = 20f;   // → rouge clignotant + buzzer
+
     public int MinChunkX { get; private set; }
     public int MaxChunkX { get; private set; }
     public int MinChunkZ { get; private set; }
     public int MaxChunkZ { get; private set; }
 
+    private float worldMinX, worldMaxX, worldMinZ, worldMaxZ;
+    private char currentMode = '0';
+
     private void Start()
     {
         ComputeBoundsAndSpawnWalls();
+        ArduinoManager.Instance?.SendBounds('0'); // Vert au démarrage
+    }
+
+    private void Update()
+    {
+        if (player == null) return;
+
+        float px = player.position.x;
+        float pz = player.position.z;
+
+        float distToEdge = Mathf.Min(
+            px - worldMinX,
+            worldMaxX - px,
+            pz - worldMinZ,
+            worldMaxZ - pz
+        );
+
+        char newMode;
+        if (distToEdge < dangerDistance)
+            newMode = '2';      // rouge clignotant + buzzer
+        else if (distToEdge < warningDistance)
+            newMode = '1';      // orange fixe
+        else
+            newMode = '0';      // vert fixe
+
+        if (newMode != currentMode)
+        {
+            currentMode = newMode;
+            ArduinoManager.Instance?.SendBounds(currentMode);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        ArduinoManager.Instance?.SendBounds('0'); // Repasse au vert à la fin
     }
 
     private void ComputeBoundsAndSpawnWalls()
     {
-        // ✅ Bounds FIXES (indépendants des régions)
         MinChunkX = -worldRadius;
         MaxChunkX = worldRadius;
         MinChunkZ = -worldRadius;
         MaxChunkZ = worldRadius;
 
-        // Conversion en coordonnées monde
-        float worldMinX = MinChunkX * chunkSize;
-        float worldMaxX = (MaxChunkX + 1) * chunkSize;
-        float worldMinZ = MinChunkZ * chunkSize;
-        float worldMaxZ = (MaxChunkZ + 1) * chunkSize;
+        worldMinX = MinChunkX * chunkSize;
+        worldMaxX = (MaxChunkX + 1) * chunkSize;
+        worldMinZ = MinChunkZ * chunkSize;
+        worldMaxZ = (MaxChunkZ + 1) * chunkSize;
 
         float centerX = (worldMinX + worldMaxX) * 0.5f;
         float centerZ = (worldMinZ + worldMaxZ) * 0.5f;
@@ -43,25 +84,20 @@ public class WorldBounds : MonoBehaviour
 
         Debug.Log($"Bounds: X {MinChunkX} → {MaxChunkX}, Z {MinChunkZ} → {MaxChunkZ}");
 
-        // Root des murs
         GameObject wallRoot = new GameObject("WorldBounds_Walls");
 
-        // Nord
         SpawnWall(wallRoot.transform, "Wall_North",
             new Vector3(centerX, wallHeight * 0.5f, worldMaxZ + wallThickness * 0.5f),
             new Vector3(sizeX + wallThickness * 2f, wallHeight, wallThickness));
 
-        // Sud
         SpawnWall(wallRoot.transform, "Wall_South",
             new Vector3(centerX, wallHeight * 0.5f, worldMinZ - wallThickness * 0.5f),
             new Vector3(sizeX + wallThickness * 2f, wallHeight, wallThickness));
 
-        // Est
         SpawnWall(wallRoot.transform, "Wall_East",
             new Vector3(worldMaxX + wallThickness * 0.5f, wallHeight * 0.5f, centerZ),
-            new Vector3(wallThickness, wallHeight, sizeZ + wallThickness * 2f)); // ← même logique que Nord/Sud
+            new Vector3(wallThickness, wallHeight, sizeZ + wallThickness * 2f));
 
-        // Ouest
         SpawnWall(wallRoot.transform, "Wall_West",
             new Vector3(worldMinX - wallThickness * 0.5f, wallHeight * 0.5f, centerZ),
             new Vector3(wallThickness, wallHeight, sizeZ + wallThickness * 2f));
