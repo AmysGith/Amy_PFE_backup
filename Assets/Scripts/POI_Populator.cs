@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
+
 
 public class POIPopulator : MonoBehaviour
 {
@@ -23,7 +23,6 @@ public class POIPopulator : MonoBehaviour
 
     private const int BATCH_SIZE = 1023;
     private static readonly Matrix4x4[] batchBuffer = new Matrix4x4[BATCH_SIZE];
-    private static readonly int BleachID = Shader.PropertyToID("_Bleach");
     private MaterialPropertyBlock globalMPB;
 
     private Vector2Int chunkCoord;
@@ -45,11 +44,12 @@ public class POIPopulator : MonoBehaviour
         public Mesh mesh;
         public Matrix4x4[] matrices;
         public int midCount;
+        public Color color;
+        public bool hasColor;
     }
 
     private void Awake()
     {
-
         mainCam = Camera.main;
         terrain = GetComponent<Terrain>();
         if (terrain != null) tData = terrain.terrainData;
@@ -129,6 +129,9 @@ public class POIPopulator : MonoBehaviour
 
             if (targetCount <= 0) continue;
 
+            bool hasColors = obj.instanceColors != null && obj.instanceColors.Length > 0;
+            int colorCount = hasColors ? obj.instanceColors.Length : 1;
+
             Vector2[] centers = null;
             if (obj.useClusters)
             {
@@ -138,7 +141,8 @@ public class POIPopulator : MonoBehaviour
                     centers[c] = new Vector2(NextFloat(rng, 0f, chunkSize), NextFloat(rng, 0f, chunkSize));
             }
 
-            var tempMatrices = new Dictionary<Mesh, List<Matrix4x4>>();
+            // mesh -> (colorIndex -> matrices)
+            var tempMatrices = new Dictionary<Mesh, Dictionary<int, List<Matrix4x4>>>();
 
             for (int m = 0; m < obj.meshes.Length; m++)
             {
@@ -146,7 +150,11 @@ public class POIPopulator : MonoBehaviour
                 if (mesh == null) continue;
 
                 if (!tempMatrices.ContainsKey(mesh))
-                    tempMatrices[mesh] = new List<Matrix4x4>();
+                {
+                    tempMatrices[mesh] = new Dictionary<int, List<Matrix4x4>>();
+                    for (int ci = 0; ci < colorCount; ci++)
+                        tempMatrices[mesh][ci] = new List<Matrix4x4>();
+                }
 
                 for (int j = 0; j < targetCount; j++)
                 {
@@ -185,28 +193,41 @@ public class POIPopulator : MonoBehaviour
                         Vector3.one * scale
                     );
 
-                    tempMatrices[mesh].Add(mat);
+                    int colorIdx = hasColors ? rng.Next(0, colorCount) : 0;
+                    tempMatrices[mesh][colorIdx].Add(mat);
                 }
             }
 
-            foreach (var kv in tempMatrices)
+            foreach (var meshKv in tempMatrices)
             {
-                var mg = new MeshGroup
+                foreach (var colorKv in meshKv.Value)
                 {
-                    mesh = kv.Key,
-                    matrices = kv.Value.ToArray(),
-                    midCount = Mathf.Clamp(Mathf.RoundToInt(kv.Value.Count * lodMidDensity), 1, kv.Value.Count)
-                };
+                    if (colorKv.Value.Count == 0) continue;
 
-                if (!materialToGroups.ContainsKey(obj.material))
-                    materialToGroups[obj.material] = new List<MeshGroup>();
-                materialToGroups[obj.material].Add(mg);
+                    Color assignedColor = hasColors ? obj.instanceColors[colorKv.Key] : Color.white;
+
+                    var mg = new MeshGroup
+                    {
+                        mesh = meshKv.Key,
+                        matrices = colorKv.Value.ToArray(),
+                        midCount = Mathf.Clamp(Mathf.RoundToInt(colorKv.Value.Count * lodMidDensity), 1, colorKv.Value.Count),
+                        color = assignedColor,
+                        hasColor = hasColors
+                    };
+
+                    if (!materialToGroups.ContainsKey(obj.material))
+                        materialToGroups[obj.material] = new List<MeshGroup>();
+                    materialToGroups[obj.material].Add(mg);
+                }
             }
         }
     }
 
+    private Dictionary<Material, Color> originalColors = new Dictionary<Material, Color>();
+
     private void Update()
     {
+       
         if (!isPopulated || materialToGroups == null || mainCam == null) return;
 
         Vector3 d = mainCam.transform.position - chunkCenter;
@@ -234,30 +255,36 @@ public class POIPopulator : MonoBehaviour
             {
                 int drawCount = useMid ? group.midCount : group.matrices.Length;
                 if (drawCount <= 0) continue;
-                Draw(group.mesh, mat, group.matrices, drawCount);
+                Draw(group.mesh, mat, group.matrices, drawCount, group.color, group.hasColor);
             }
         }
-
-        
     }
 
-    private Dictionary<Material, Color> originalColors = new Dictionary<Material, Color>();
-
-    private void Draw(Mesh mesh, Material mat, Matrix4x4[] matrices, int count)
+    private void Draw(Mesh mesh, Material mat, Matrix4x4[] matrices, int count, Color groupColor, bool hasColor)
     {
         globalMPB.Clear();
 
-        if (isBleachablePOI && bleachProgress > 0f)
+        Color baseColor;
+
+        if (hasColor)
+        {
+            baseColor = groupColor;
+        }
+        else
         {
             if (!originalColors.ContainsKey(mat))
-                originalColors[mat] = mat.GetColor("_BaseColor");
+                originalColors[mat] = mat.HasProperty("_BaseColor") ? mat.GetColor("_BaseColor") : Color.white;
+            baseColor = originalColors[mat];
+        }
 
-            Color baseColor = originalColors[mat];
-            globalMPB.SetColor("_BaseColor", Color.Lerp(baseColor, Color.white, bleachProgress));
-
+        if (isBleachablePOI && bleachProgress > 0f)
+        {
+            baseColor = Color.Lerp(baseColor, Color.white, bleachProgress);
             if (bleachProgress > 0.99f)
                 globalMPB.SetTexture("_BaseMap", Texture2D.whiteTexture);
         }
+
+        globalMPB.SetColor("_BaseColor", baseColor);
 
         int offset = 0;
         while (offset < count)
@@ -268,6 +295,7 @@ public class POIPopulator : MonoBehaviour
             offset += batch;
         }
     }
+
     static int Hash(int x, int y, int i, int seed)
     {
         unchecked

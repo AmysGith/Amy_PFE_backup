@@ -128,6 +128,7 @@ MonoBehaviour:
     clusterWeight: 0.85
     snapYawTo90: 1
     baseRotation: {x: 0, y: 0, z: 0}
+    instanceColors: []
   - label: Rock
     meshes:
     - {fileID: 2289415448551767133, guid: 2c5fe446668d34147ac86478e7985ddb, type: 3}
@@ -145,6 +146,7 @@ MonoBehaviour:
     clusterWeight: 0.85
     snapYawTo90: 1
     baseRotation: {x: 0, y: 0, z: 0}
+    instanceColors: []
   - label: Corail
     meshes:
     - {fileID: -2678200808768954665, guid: aa634823e072c8645b4935ccf25a9423, type: 3}
@@ -162,40 +164,7 @@ MonoBehaviour:
     clusterWeight: 0.85
     snapYawTo90: 1
     baseRotation: {x: 0, y: 0, z: 0}
-  - label: Corail
-    meshes:
-    - {fileID: -5257580638339434780, guid: aa634823e072c8645b4935ccf25a9423, type: 3}
-    material: {fileID: 2100000, guid: 936b2fe906597024680b6f6a3c09a6dd, type: 2}
-    count: 10
-    scaleMinMax: {x: 25, y: 25}
-    rotationMinMax: {x: 25, y: 25}
-    alignToSurface: 0
-    usePerlinDensity: 1
-    perlinFrequency: 0.12
-    perlinDensityMinMax: {x: 0.2, y: 1.3}
-    useClusters: 1
-    clustersPerChunk: 6
-    clusterRadius: 4
-    clusterWeight: 0.85
-    snapYawTo90: 1
-    baseRotation: {x: 0, y: 0, z: 0}
-  - label: Corail
-    meshes:
-    - {fileID: -7122770539524534428, guid: aa634823e072c8645b4935ccf25a9423, type: 3}
-    material: {fileID: 2100000, guid: 15687f1b745999d4ca72c0a2cbf6fd15, type: 2}
-    count: 10
-    scaleMinMax: {x: 25, y: 25}
-    rotationMinMax: {x: 20, y: 25}
-    alignToSurface: 0
-    usePerlinDensity: 1
-    perlinFrequency: 0.12
-    perlinDensityMinMax: {x: 0.2, y: 1.3}
-    useClusters: 1
-    clustersPerChunk: 6
-    clusterRadius: 4
-    clusterWeight: 0.85
-    snapYawTo90: 1
-    baseRotation: {x: 0, y: 0, z: 0}
+    instanceColors: []
   - label: starfish
     meshes:
     - {fileID: -3194780947581505845, guid: 9859a389f26f82f4b8e93753944f6168, type: 3}
@@ -213,6 +182,7 @@ MonoBehaviour:
     clusterWeight: 0.85
     snapYawTo90: 1
     baseRotation: {x: 0, y: 0, z: 0}
+    instanceColors: []
   - label: algue2
     meshes:
     - {fileID: 46604309741045415, guid: ef2d8307ea69f0f4ab93d4f07041a44e, type: 3}
@@ -230,6 +200,7 @@ MonoBehaviour:
     clusterWeight: 0.85
     snapYawTo90: 1
     baseRotation: {x: -90, y: -90, z: -90}
+    instanceColors: []
   lodFarDistance: 80
   lodMidDistance: 40
   lodMidDensity: 0.4

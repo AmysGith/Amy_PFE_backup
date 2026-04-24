@@ -21,40 +21,35 @@ public class MiniMap : MonoBehaviour
 
     void Update()
     {
+        
+
         if (player == null || ArduinoManager.Instance == null || poiRegistry == null)
             return;
 
-
-        //Debug.Log($"player={player != null} | arduino={ArduinoManager.Instance != null} | poi={poiRegistry != null}");
         timer += Time.deltaTime;
         if (timer < updateRate) return;
         timer = 0;
 
-        // ── HEADER ───────────────────────────
         string msg = $"A:{player.eulerAngles.y:F1}|S:{radarRange:F0}";
         int count = 0;
 
-        // ── POI ──────────────────────────────
         foreach (var kv in poiRegistry.GetAllPOIs())
         {
             if (count >= 5) break;
-
             Vector2Int chunk = kv.Key;
-
-            Vector3 worldPos = new Vector3(
-                chunk.x * chunkSize,
-                0f,
-                chunk.y * chunkSize
-            );
-
+            Vector3 worldPos = new Vector3(chunk.x * chunkSize, 0f, chunk.y * chunkSize);
             Vector3 diff = worldPos - player.position;
 
-            // pas de radarScale ici, l'Arduino s'en charge avec S:
-            msg += $"|P:{diff.x:F0},{diff.z:F0}";
+            float heading = player.eulerAngles.y * Mathf.Deg2Rad;
+            float cosH = Mathf.Cos(-heading);
+            float sinH = Mathf.Sin(-heading);
+            float localX = diff.x * cosH + diff.z * sinH;
+            float localZ = -diff.x * sinH + diff.z * cosH;
+
+            msg += $"|P:{localX:F0},{localZ:F0}";
             count++;
         }
 
         ArduinoManager.Instance.SendRadar(msg);
-        //Debug.Log($"RADAR SEND ({count} POIs) → " + msg);
     }
 }

@@ -10,30 +10,28 @@ public class FlockManager : MonoBehaviour
     public Transform playerTransform;
     public Camera playerCamera;
 
-    [Header("Zone de nage")]
-    public Vector3 swimLimits = new Vector3(6f, 2f, 6f);
-    public float minHeight = 11f;
-    public float maxHeight = 15f;
+    [Header("Hauteur de nage")]
+    public float minHeight = 13f;
+    public float maxHeight = 17f;
 
-    [Header("Objectif")]
-    public float goalChangeChance = 0.01f;
-    public float goalFollowStrength = 2f;
+    [Header("Zone autour du joueur (XZ)")]
+    [Tooltip("Doit être >= spawnRadius du FlockPooler pour que les poissons ne soient pas rappelés dès le départ")]
+    public float swimRadius = 28f;
+    [Tooltip("Force de rappel quand un poisson sort du rayon")]
+    public float boundaryStrength = 3f;
 
-    [Header("Boids")]
-    public float cohesionStrength = 0.8f;
-    public float alignmentStrength = 1.2f;
-    public float separationRadius = 1.2f;
-    public float separationStrength = 3f;
-    public float neighbourDistance = 4f;
+    [Header("Séparation")]
+    public float separationRadius = 1.8f;
+    public float separationStrength = 2.5f;
 
-    [Header("Mouvement")]
-    public float minSpeed = 1f;
-    public float maxSpeed = 3f;
-    public float rotationSpeed = 4f;
-    public float wanderStrength = 0.5f;
-    public float wanderChangeInterval = 3f;
+    [Header("Wander individuel")]
+    public float wanderStrength = 1.2f;
+    public float wanderInterval = 4f;
 
-    [HideInInspector] public Vector3 goalPos;
+    [Header("Vitesse")]
+    public float minSpeed = 0.8f;
+    public float maxSpeed = 2.2f;
+    public float rotationSpeed = 2f;
 
     NativeArray<Vector3> positions;
     NativeArray<Vector3> velocities;
@@ -41,7 +39,6 @@ public class FlockManager : MonoBehaviour
     NativeArray<float> wanderTimers;
     NativeArray<Vector3> wanderDirs;
     NativeArray<Quaternion> currentRotations;
-
     NativeArray<Vector3> outPositions;
     NativeArray<Quaternion> outRotations;
     NativeArray<Vector3> outVelocities;
@@ -70,19 +67,24 @@ public class FlockManager : MonoBehaviour
         outRotations = new NativeArray<Quaternion>(fishCount, Allocator.Persistent);
         outVelocities = new NativeArray<Vector3>(fishCount, Allocator.Persistent);
 
-        // Goal initial = position joueur
-        goalPos = playerTransform.position;
-
         for (int i = 0; i < fishCount; i++)
         {
             var fish = pool[i];
 
-            // Les poissons sont déjà positionnés par FlockPooler,
-            // on récupère juste leurs positions existantes
+            // FlockPooler a déjà réparti les positions en anneau — on les respecte
+            // On force juste Y dans la bonne plage au cas où
             Vector3 spawnPos = fish.transform.position;
-            Vector3 dir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)).normalized;
-            Quaternion rot = Quaternion.LookRotation(dir, Vector3.up);
+            if (spawnPos.y < minHeight || spawnPos.y > maxHeight)
+                spawnPos.y = Random.Range(minHeight, maxHeight);
+            fish.transform.position = spawnPos;
 
+            // Direction initiale aléatoire, différente pour chaque poisson
+            Vector3 dir = new Vector3(
+                Random.Range(-1f, 1f),
+                0f,
+                Random.Range(-1f, 1f)).normalized;
+
+            Quaternion rot = Quaternion.LookRotation(dir, Vector3.up);
             fish.transform.rotation = rot;
             fish.SetActive(true);
 
@@ -90,13 +92,13 @@ public class FlockManager : MonoBehaviour
             positions[i] = spawnPos;
             velocities[i] = dir * Random.Range(minSpeed, maxSpeed);
             phaseOffsets[i] = Random.Range(0f, Mathf.PI * 2f);
-            wanderTimers[i] = Random.Range(0f, wanderChangeInterval);
+            // Décalage aléatoire du timer = chaque poisson change de direction à un moment différent
+            wanderTimers[i] = Random.Range(0f, wanderInterval);
             wanderDirs[i] = dir;
             currentRotations[i] = rot;
         }
-        Debug.Log("FlockManager: fishCount = " + fishCount);
-        if (fishCount > 0)
-            Debug.Log("Premier poisson à " + positions[0]);
+
+        Debug.Log($"[FlockManager v4] {fishCount} poissons initialisés.");
     }
 
     void Update()
@@ -112,62 +114,43 @@ public class FlockManager : MonoBehaviour
             currentRotations[i] = outRotations[i];
         }
 
-        // Goal suit le joueur + bouge aléatoirement autour de lui
-        if (Random.value < goalChangeChance)
-        {
-            goalPos = playerTransform.position + new Vector3(
-                Random.Range(-swimLimits.x, swimLimits.x),
-                0f,
-                Random.Range(-swimLimits.z, swimLimits.z));
-            goalPos.y = Random.Range(minHeight, maxHeight);
-        }
-
-        // Colle au joueur en permanence quand il se déplace
-        goalPos += (playerTransform.position - goalPos) * (Time.deltaTime * 2f);
-
-        // Wander timers
         for (int i = 0; i < fishCount; i++)
         {
             wanderTimers[i] -= Time.deltaTime;
             if (wanderTimers[i] <= 0f)
             {
-                wanderDirs[i] = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)).normalized;
-                wanderTimers[i] = wanderChangeInterval + Random.Range(-1f, 1f);
+                wanderDirs[i] = new Vector3(
+                    Random.Range(-1f, 1f),
+                    Random.Range(-0.1f, 0.1f),
+                    Random.Range(-1f, 1f)).normalized;
+                // Intervalle légèrement variable = encore plus d'asynchronisme entre poissons
+                wanderTimers[i] = wanderInterval + Random.Range(-1f, 2f);
             }
         }
 
         var job = new FlockJob
         {
-            goalPos = goalPos,
             playerPos = playerTransform.position,
-            swimLimits = swimLimits,
+            swimRadius = swimRadius,
+            boundaryStrength = boundaryStrength,
             minHeight = minHeight,
             maxHeight = maxHeight,
-            goalFollowStrength = goalFollowStrength,
-
-            cohesionStrength = cohesionStrength,
-            alignmentStrength = alignmentStrength,
             separationRadius = separationRadius,
             separationStrength = separationStrength,
-            neighbourDistance = neighbourDistance,
-
             wanderStrength = wanderStrength,
             minSpeed = minSpeed,
             maxSpeed = maxSpeed,
             rotationSpeed = rotationSpeed,
-
             deltaTime = Time.deltaTime,
             time = Time.time,
-
             positions = positions,
             velocities = velocities,
             phaseOffsets = phaseOffsets,
             wanderDirs = wanderDirs,
             currentRotations = currentRotations,
-
             outPositions = outPositions,
             outRotations = outRotations,
-            outVelocities = outVelocities
+            outVelocities = outVelocities,
         };
 
         jobHandle = job.Schedule(fishCount, 32);
@@ -176,29 +159,20 @@ public class FlockManager : MonoBehaviour
     void OnDestroy()
     {
         jobHandle.Complete();
-        positions.Dispose();
-        velocities.Dispose();
-        phaseOffsets.Dispose();
-        wanderTimers.Dispose();
-        wanderDirs.Dispose();
-        currentRotations.Dispose();
-        outPositions.Dispose();
-        outRotations.Dispose();
+        positions.Dispose(); velocities.Dispose();
+        phaseOffsets.Dispose(); wanderTimers.Dispose();
+        wanderDirs.Dispose(); currentRotations.Dispose();
+        outPositions.Dispose(); outRotations.Dispose();
         outVelocities.Dispose();
     }
 
     [BurstCompile]
     struct FlockJob : IJobParallelFor
     {
-        [ReadOnly] public Vector3 goalPos;
         [ReadOnly] public Vector3 playerPos;
-        [ReadOnly] public Vector3 swimLimits;
+        [ReadOnly] public float swimRadius, boundaryStrength;
         [ReadOnly] public float minHeight, maxHeight;
-        [ReadOnly] public float goalFollowStrength;
-
-        [ReadOnly] public float cohesionStrength, alignmentStrength;
-        [ReadOnly] public float separationRadius, separationStrength, neighbourDistance;
-
+        [ReadOnly] public float separationRadius, separationStrength;
         [ReadOnly] public float wanderStrength;
         [ReadOnly] public float minSpeed, maxSpeed, rotationSpeed;
         [ReadOnly] public float deltaTime, time;
@@ -219,97 +193,64 @@ public class FlockManager : MonoBehaviour
             Vector3 vel = velocities[i];
             float phase = phaseOffsets[i];
 
-            // ── Boids ────────────────────────────────────────────────────────
-            Vector3 cohesionSum = Vector3.zero;
-            Vector3 alignSum = Vector3.zero;
+            // ── Séparation ───────────────────────────────────────────────────
             Vector3 separate = Vector3.zero;
-            int neighbors = 0;
-
             for (int j = 0; j < positions.Length; j++)
             {
                 if (j == i) continue;
-                Vector3 diff = positions[j] - pos;
-                float d = diff.magnitude;
-
-                if (d < separationRadius && d > 0f)
-                    separate -= diff.normalized * (separationRadius - d);
-
-                if (d < neighbourDistance)
-                {
-                    cohesionSum += positions[j];
-                    alignSum += velocities[j];
-                    neighbors++;
-                }
+                Vector3 away = pos - positions[j];
+                float d = away.magnitude;
+                if (d < separationRadius && d > 0.001f)
+                    separate += away.normalized * ((separationRadius - d) / separationRadius);
             }
-
-            Vector3 cohesion = Vector3.zero;
-            Vector3 alignment = Vector3.zero;
-
-            if (neighbors > 0)
-            {
-                cohesion = ((cohesionSum / neighbors) - pos).normalized * cohesionStrength;
-                alignment = (alignSum / neighbors).normalized * alignmentStrength;
-            }
-
-            // ── Retour dans les bounds autour du joueur ──────────────────────
-            Vector3 relativePos = pos - playerPos;
-            bool outOfBounds =
-                Mathf.Abs(relativePos.x) > swimLimits.x ||
-                Mathf.Abs(relativePos.z) > swimLimits.z;
-
-            Vector3 boundsForce = Vector3.zero;
-            if (outOfBounds)
-            {
-                boundsForce = playerPos - pos;
-                boundsForce.y = 0f;
-                boundsForce = boundsForce.normalized * 5f;
-            }
-
-            // ── Suivi du goal ────────────────────────────────────────────────
-            Vector3 toGoal = goalPos - pos;
-            toGoal.y = 0f;
-            Vector3 goalForce = toGoal.normalized * goalFollowStrength;
 
             // ── Wander ───────────────────────────────────────────────────────
             Vector3 wander = wanderDirs[i] * wanderStrength;
 
-            // ── Direction finale sur plan XZ ─────────────────────────────────
-            Vector3 desired = cohesion
-                            + alignment
+            // ── Rappel XZ dans le rayon autour du joueur ─────────────────────
+            Vector3 toPlayer = playerPos - pos;
+            toPlayer.y = 0f;
+            float distXZ = toPlayer.magnitude;
+            Vector3 boundary = Vector3.zero;
+            if (distXZ > swimRadius)
+                boundary = toPlayer.normalized * (distXZ - swimRadius) * boundaryStrength;
+
+            // ── Rappel vertical ──────────────────────────────────────────────
+            Vector3 heightForce = Vector3.zero;
+            if (pos.y < minHeight)
+                heightForce.y = (minHeight - pos.y) * boundaryStrength;
+            else if (pos.y > maxHeight)
+                heightForce.y = -(pos.y - maxHeight) * boundaryStrength;
+
+            // ── Direction désirée ────────────────────────────────────────────
+            Vector3 desired = wander
                             + separate * separationStrength
-                            + goalForce
-                            + boundsForce
-                            + wander;
-            desired.y = 0f;
+                            + boundary
+                            + heightForce;
 
             float speed = vel.magnitude;
             if (speed < 0.001f) speed = minSpeed;
 
-            Vector3 dir = vel;
-            dir.y = 0f;
+            Vector3 dir = vel.normalized;
             if (dir.sqrMagnitude < 0.001f) dir = Vector3.forward;
-            dir = dir.normalized;
 
             if (desired.sqrMagnitude > 0.001f)
                 dir = Vector3.Slerp(dir, desired.normalized, rotationSpeed * deltaTime);
 
-            float targetSpeed = Mathf.Lerp(minSpeed, maxSpeed,
-                0.5f + Mathf.Sin(time + phase) * 0.3f);
-            speed = Mathf.Lerp(speed, targetSpeed, deltaTime * 2f);
+            // ── Vitesse ondulante ────────────────────────────────────────────
+            float wave = Mathf.Sin(time * 1.2f + phase);
+            float targetSpeed = Mathf.Lerp(minSpeed, maxSpeed, 0.5f + wave * 0.3f);
+            speed = Mathf.Lerp(speed, targetSpeed, deltaTime * 2.5f);
             speed = Mathf.Clamp(speed, minSpeed, maxSpeed);
 
-            // ── Rotation — euler.x = 0, jamais de tête en bas ───────────────
+            // ── Rotation douce, jamais tête en bas ───────────────────────────
             Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
-            Quaternion rot = Quaternion.Slerp(
-                currentRotations[i],
-                targetRot,
-                rotationSpeed * deltaTime);
-
+            Quaternion rot = Quaternion.Slerp(currentRotations[i], targetRot, rotationSpeed * deltaTime);
             Vector3 euler = rot.eulerAngles;
             euler.x = 0f;
             rot = Quaternion.Euler(euler);
 
-            // ── Position + contrainte hauteur ────────────────────────────────
+            // ── Position finale ──────────────────────────────────────────────
             Vector3 newPos = pos + (rot * Vector3.forward) * speed * deltaTime;
             newPos.y = Mathf.Clamp(newPos.y, minHeight, maxHeight);
 

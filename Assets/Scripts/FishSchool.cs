@@ -208,7 +208,12 @@ public class FishSchool : MonoBehaviour
         cellCountBuffer?.Release();
         cellIndicesBuffer?.Release();
         argsBuffer?.Release();
+
+        // ← Désactiver avant de libérer pour éviter le warning Unity
+        if (heightmapRT != null && RenderTexture.active == heightmapRT)
+            RenderTexture.active = null;
         heightmapRT?.Release();
+
         if (instancedMaterial != null) Destroy(instancedMaterial);
         fishBuffer = null;
         cellCountBuffer = null;

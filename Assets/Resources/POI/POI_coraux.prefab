@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6323579511741306671}
   - component: {fileID: 6175569619862609007}
   - component: {fileID: 7104805659315771010}
-  - component: {fileID: -8298319893800941733}
+  - component: {fileID: 5595518257921971497}
   m_Layer: 0
   m_Name: POI_coraux
   m_TagString: Untagged
@@ -144,7 +144,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-8298319893800941733
+--- !u!114 &5595518257921971497
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,31 +158,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainManager: {fileID: 0}
   objects:
-  - label: BigCoral
+  - label: corail
     meshes:
-    - {fileID: 5461320835613783329, guid: b2f8f3d6d85a31e448d4f993faa7e029, type: 3}
-    material: {fileID: 2100000, guid: 936b2fe906597024680b6f6a3c09a6dd, type: 2}
-    count: 5
-    scaleMinMax: {x: 2, y: 5}
-    rotationMinMax: {x: 0, y: 0}
-    alignToSurface: 0
-    usePerlinDensity: 0
-    perlinFrequency: 0
-    perlinDensityMinMax: {x: 0, y: 0}
-    useClusters: 0
-    clustersPerChunk: 0
-    clusterRadius: 0
-    clusterWeight: 0
-    snapYawTo90: 0
-    baseRotation: {x: 0, y: 0, z: 0}
-  - label: Coraux1
-    meshes:
-    - {fileID: 1803717800030214448, guid: e4a9b79cf31746d48a6c936b00ccd815, type: 3}
-    - {fileID: 8654070266593911294, guid: e4a9b79cf31746d48a6c936b00ccd815, type: 3}
-    - {fileID: -4679952110961492691, guid: e4a9b79cf31746d48a6c936b00ccd815, type: 3}
-    material: {fileID: 2100000, guid: 15687f1b745999d4ca72c0a2cbf6fd15, type: 2}
-    count: 5
-    scaleMinMax: {x: 2, y: 5}
+    - {fileID: -5413607543357802909, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
+    - {fileID: -7196079186728127361, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
+    - {fileID: -8501823577752040944, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
+    - {fileID: -1908500583643497186, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
+    material: {fileID: 2100000, guid: fd988e020cdf60e468b069f6e3b506bf, type: 2}
+    count: 10
+    scaleMinMax: {x: 0.3, y: 0.3}
     rotationMinMax: {x: 0, y: 0}
     alignToSurface: 1
     usePerlinDensity: 0
@@ -193,7 +177,15 @@ MonoBehaviour:
     clusterRadius: 0
     clusterWeight: 0
     snapYawTo90: 0
-    baseRotation: {x: 0, y: 0, z: 0}
+    baseRotation: {x: -90, y: 0, z: 0}
+    instanceColors:
+    - {r: 0.72327036, g: 0.17058252, b: 0.17058252, a: 0}
+    - {r: 0.35570177, g: 0.6855345, b: 0.4302694, a: 0}
+    - {r: 0.6862745, g: 0.61105144, b: 0.35686275, a: 0}
+    - {r: 0.6226415, g: 0.23300101, b: 0.53979623, a: 0}
+    - {r: 0.12570699, g: 0.14300628, b: 0.17610055, a: 0}
+    - {r: 0.25916684, g: 0.70440245, b: 0.61901695, a: 0}
+    - {r: 0.69182384, g: 0.55041325, b: 0.62675905, a: 0}
   worldSeed: 1337
   lodFarDistance: 80
   lodMidDistance: 40

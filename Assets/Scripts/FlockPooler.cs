@@ -9,10 +9,15 @@ public class FlockPooler : MonoBehaviour
     public int numFishPerPrefab = 10;
     public List<GameObject> pooledFish = new List<GameObject>();
 
-    public Transform playerTransform;  // Assigne le joueur ici dans l'inspecteur
-    public float spawnRadius = 5f;     // Rayon de spawn autour du joueur
-    public float minHeight = 11f;      // Hauteur min (joueur à Y=13)
-    public float maxHeight = 15f;      // Hauteur max
+    public Transform playerTransform;
+
+    [Header("Spawn — réparti sur grand rayon")]
+    [Tooltip("Rayon XZ de spawn autour du joueur — mets 20-30 pour éviter les groupes")]
+    public float spawnRadius = 25f;
+    [Tooltip("Rayon minimum (anneau) — évite que tout le monde spawn au centre")]
+    public float spawnRadiusMin = 5f;
+    public float minHeight = 13f;
+    public float maxHeight = 17f;
 
     void Awake()
     {
@@ -24,7 +29,6 @@ public class FlockPooler : MonoBehaviour
             return;
         }
 
-        // Position de base : le joueur, ou (25,13,25) si pas assigné
         Vector3 center = playerTransform != null
             ? playerTransform.position
             : new Vector3(25f, 13f, 25f);
@@ -33,22 +37,23 @@ public class FlockPooler : MonoBehaviour
         {
             for (int i = 0; i < numFishPerPrefab; i++)
             {
-                // Position aléatoire autour du joueur
-                Vector3 offset = new Vector3(
-                    Random.Range(-spawnRadius, spawnRadius),
-                    0f,
-                    Random.Range(-spawnRadius, spawnRadius));
+                // Spawn en anneau : entre spawnRadiusMin et spawnRadius
+                // => personne au centre, réparti sur toute la zone
+                float angle = Random.Range(0f, Mathf.PI * 2f);
+                float radius = Random.Range(spawnRadiusMin, spawnRadius);
 
-                Vector3 spawnPos = center + offset;
-                spawnPos.y = Random.Range(minHeight, maxHeight);
+                Vector3 spawnPos = new Vector3(
+                    center.x + Mathf.Cos(angle) * radius,
+                    Random.Range(minHeight, maxHeight),
+                    center.z + Mathf.Sin(angle) * radius);
 
                 var fish = Instantiate(prefab, spawnPos, Quaternion.identity);
                 fish.SetActive(false);
                 pooledFish.Add(fish);
             }
         }
-        Debug.Log("FlockPooler: " + pooledFish.Count + " poissons créés à " +
-    (playerTransform != null ? playerTransform.position.ToString() : "playerTransform NULL"));
+
+        Debug.Log($"[FlockPooler] {pooledFish.Count} poissons créés en anneau r={spawnRadiusMin}-{spawnRadius} autour de {center}");
     }
 
     public GameObject GetInactiveFish()
@@ -60,10 +65,13 @@ public class FlockPooler : MonoBehaviour
             ? playerTransform.position
             : new Vector3(25f, 13f, 25f);
 
-        Vector3 spawnPos = center + new Vector3(
-            Random.Range(-spawnRadius, spawnRadius),
+        float angle = Random.Range(0f, Mathf.PI * 2f);
+        float radius = Random.Range(spawnRadiusMin, spawnRadius);
+
+        Vector3 spawnPos = new Vector3(
+            center.x + Mathf.Cos(angle) * radius,
             Random.Range(minHeight, maxHeight),
-            Random.Range(-spawnRadius, spawnRadius));
+            center.z + Mathf.Sin(angle) * radius);
 
         var newFish = Instantiate(
             fishPrefabs[Random.Range(0, fishPrefabs.Length)],
