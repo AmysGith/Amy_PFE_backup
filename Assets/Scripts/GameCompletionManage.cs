@@ -10,7 +10,7 @@ public class GameCompletionManager : MonoBehaviour
     public POIRegistry poiRegistry;
 
     [Header("Scène de destination")]
-    public string menuSceneName = "Menu";
+    public string menuSceneName = "SceneFin";
 
     [Header("UI optionnelle")]
     public TMPro.TextMeshProUGUI progressLabel;
