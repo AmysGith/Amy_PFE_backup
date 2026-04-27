@@ -30030,6 +30030,7 @@ GameObject:
   - component: {fileID: 4991102448009481517}
   - component: {fileID: 6741805481905521974}
   - component: {fileID: 7454114448402838846}
+  - component: {fileID: -406171202207456418}
   m_Layer: 0
   m_Name: POI_Trash
   m_TagString: Untagged
@@ -30114,11 +30115,26 @@ TerrainCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 2
   m_TerrainData: {fileID: 15600000, guid: d33c722ee04bc754c9326e673f162137, type: 2}
   m_EnableTreeColliders: 1
+--- !u!114 &-406171202207456418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4837913142876172253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b88df39171e14634db8fb5c271ce84c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  factSprite: {fileID: 21300000, guid: 5ec6b4ce332d24341ba79482bb750ccd, type: 3}
+  fact: 
+  title: 
 --- !u!1 &4865795604744791279
 GameObject:
   m_ObjectHideFlags: 0

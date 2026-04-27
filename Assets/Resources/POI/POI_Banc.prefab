@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8274105549816158580}
   - component: {fileID: 3935580087083484450}
   - component: {fileID: 5857305888472437553}
+  - component: {fileID: -4357743295510949336}
   m_Layer: 0
   m_Name: POI_Banc
   m_TagString: Untagged
@@ -164,9 +165,29 @@ MonoBehaviour:
   separationWeight: 1.5
   alignmentWeight: 1
   cohesionWeight: 0.8
-  spawnRadius: 25
-  simulationRadius: 32
-  cellSize: 3
-  maxPerCell: 32
   terrain: {fileID: 1621237685505844808}
   minSwimHeight: 1.5
+  fishColors:
+  - {r: 0.2, g: 0.6, b: 0.9, a: 1}
+  - {r: 0.9, g: 0.5, b: 0.1, a: 1}
+  - {r: 0.2, g: 0.8, b: 0.4, a: 1}
+  - {r: 0.9, g: 0.2, b: 0.3, a: 1}
+  - {r: 0.8, g: 0.8, b: 0.2, a: 1}
+  - {r: 0.6, g: 0.2, b: 0.9, a: 1}
+  cellSize: 3
+  maxPerCell: 32
+--- !u!114 &-4357743295510949336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4547260835889770012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b88df39171e14634db8fb5c271ce84c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  factSprite: {fileID: 21300000, guid: 7137e7493e9a9104a8228e9c4c979b29, type: 3}
+  fact: 
+  title: 

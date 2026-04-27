@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 [Serializable]
 public class POIRegion
@@ -9,10 +9,8 @@ public class POIRegion
     public string regionName;
     public Vector2Int minChunk;
     public Vector2Int maxChunk;
-    [HideInInspector]
-    public Vector2Int assignedChunk;
-    [HideInInspector]
-    public int assignedPrefabIndex;
+    [HideInInspector] public Vector2Int assignedChunk;
+    [HideInInspector] public int assignedPrefabIndex;
 }
 
 public class StaticPOI
@@ -30,6 +28,7 @@ public class POIRegistry : MonoBehaviour
     private Dictionary<Vector2Int, StaticPOI> pois;
 
     public InfiniteTerrainManager terrainManager;
+
     private void Awake()
     {
         if (poiRoot == null)
@@ -47,9 +46,9 @@ public class POIRegistry : MonoBehaviour
         if (regions.Count > 0) return;
         regions = new List<POIRegion>
         {
-            new POIRegion { regionName = "Nord", minChunk = new Vector2Int(-1, 2), maxChunk = new Vector2Int(1, 4) },
-            new POIRegion { regionName = "Est", minChunk = new Vector2Int(2, -1), maxChunk = new Vector2Int(4, 1) },
-            new POIRegion { regionName = "Sud", minChunk = new Vector2Int(-1, -4), maxChunk = new Vector2Int(1, -2) },
+            new POIRegion { regionName = "Nord",  minChunk = new Vector2Int(-1,  2), maxChunk = new Vector2Int(1,  4) },
+            new POIRegion { regionName = "Est",   minChunk = new Vector2Int( 2, -1), maxChunk = new Vector2Int(4,  1) },
+            new POIRegion { regionName = "Sud",   minChunk = new Vector2Int(-1, -4), maxChunk = new Vector2Int(1, -2) },
             new POIRegion { regionName = "Ouest", minChunk = new Vector2Int(-4, -1), maxChunk = new Vector2Int(-2, 1) },
         };
     }
@@ -58,6 +57,7 @@ public class POIRegistry : MonoBehaviour
     {
         GameObject[] prefabs = Resources.LoadAll<GameObject>("POI").OrderBy(p => p.name).ToArray();
         if (prefabs.Length == 0) return;
+
         List<int> availablePrefabIndices = Enumerable.Range(0, prefabs.Length).ToList();
         for (int i = 0; i < availablePrefabIndices.Count; i++)
         {
@@ -66,6 +66,7 @@ public class POIRegistry : MonoBehaviour
             availablePrefabIndices[i] = availablePrefabIndices[randomIndex];
             availablePrefabIndices[randomIndex] = temp;
         }
+
         for (int i = 0; i < regions.Count; i++)
         {
             regions[i].assignedChunk = new Vector2Int(
@@ -80,22 +81,23 @@ public class POIRegistry : MonoBehaviour
     {
         pois = new Dictionary<Vector2Int, StaticPOI>();
         GameObject[] prefabs = Resources.LoadAll<GameObject>("POI").OrderBy(p => p.name).ToArray();
+
         foreach (var region in regions)
         {
             GameObject prefab = prefabs[region.assignedPrefabIndex];
             Vector2Int coord = region.assignedChunk;
-            pois[coord] = Create(prefab, coord, region);
+            pois[coord] = Create(prefab, coord);
         }
     }
 
-    private StaticPOI Create(GameObject prefab, Vector2Int coord, POIRegion region)
+    private StaticPOI Create(GameObject prefab, Vector2Int coord)
     {
         GameObject instance = Instantiate(prefab, poiRoot);
         instance.name = $"POI_{prefab.name}_{coord}";
 
         float posX = coord.x * CHUNK_SIZE;
         float posZ = coord.y * CHUNK_SIZE;
-        float posY = 12.5f; 
+        float posY = 12.5f;
 
         instance.transform.position = new Vector3(posX, posY, posZ);
         instance.SetActive(false);
@@ -109,30 +111,39 @@ public class POIRegistry : MonoBehaviour
 
     public void Activate(Vector2Int coord)
     {
-        if (pois != null && pois.ContainsKey(coord))
+        if (pois == null || !pois.ContainsKey(coord)) return;
+
+        var instance = pois[coord].instance;
+
+        var pop = instance.GetComponent<POIPopulator>();
+        if (pop != null) pop.Init(coord, terrainManager);
+
+        var trigger = instance.GetComponentInChildren<POIVisitTrigger>();
+        if (trigger == null)
         {
-            var instance = pois[coord].instance;
+            var go = new GameObject("VisitTrigger");
+            go.transform.SetParent(instance.transform, false);
+            go.transform.localPosition = new Vector3(25f, 10f, 25f);
 
-            var pop = instance.GetComponent<POIPopulator>();
-            if (pop != null) pop.Init(coord, terrainManager);
+            var col = go.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+            col.size = new Vector3(50f, 20f, 50f);
 
-            var trigger = instance.GetComponentInChildren<POIVisitTrigger>();
-            if (trigger == null)
-            {
-                var go = new GameObject("VisitTrigger");
-                go.transform.SetParent(instance.transform, false);
-                go.transform.localPosition = new Vector3(25f, 10f, 25f);
-
-                var col = go.AddComponent<BoxCollider>();
-                col.isTrigger = true;
-                col.size = new Vector3(50f, 20f, 50f);
-
-                trigger = go.AddComponent<POIVisitTrigger>();
-            }
-
-            trigger.coord = coord;
-            instance.SetActive(true);
+            trigger = go.AddComponent<POIVisitTrigger>();
         }
+
+        trigger.coord = coord;
+
+        // Données portées par le prefab
+        var data = instance.GetComponent<POIData>();
+        if (data != null)
+        {
+            trigger.fact = data.fact;
+            trigger.title = data.title;
+            trigger.factSprite = data.factSprite;
+        }
+
+        instance.SetActive(true);
     }
 
     public void Deactivate(Vector2Int coord)
@@ -143,7 +154,7 @@ public class POIRegistry : MonoBehaviour
 
     public Dictionary<Vector2Int, string> GetAllPOIs()
     {
-        Dictionary<Vector2Int, string> result = new Dictionary<Vector2Int, string>();
+        var result = new Dictionary<Vector2Int, string>();
         foreach (var region in regions)
             result[region.assignedChunk] = region.regionName;
         return result;

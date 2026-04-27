@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6175569619862609007}
   - component: {fileID: 7104805659315771010}
   - component: {fileID: 5595518257921971497}
+  - component: {fileID: -851234527546141684}
   m_Layer: 0
   m_Name: POI_coraux
   m_TagString: Untagged
@@ -142,7 +143,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 2
   m_CollisionDetection: 0
 --- !u!114 &5595518257921971497
 MonoBehaviour:
@@ -165,7 +166,7 @@ MonoBehaviour:
     - {fileID: -8501823577752040944, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
     - {fileID: -1908500583643497186, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
     material: {fileID: 2100000, guid: fd988e020cdf60e468b069f6e3b506bf, type: 2}
-    count: 10
+    count: 30
     scaleMinMax: {x: 0.3, y: 0.3}
     rotationMinMax: {x: 0, y: 0}
     alignToSurface: 1
@@ -194,3 +195,18 @@ MonoBehaviour:
   boundsHeight: 30
   isBleachablePOI: 1
   bleachProgress: 0
+--- !u!114 &-851234527546141684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5433004310006519177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b88df39171e14634db8fb5c271ce84c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  factSprite: {fileID: 21300000, guid: 6aea3339cb40dda468a5cc11542b0112, type: 3}
+  fact: 
+  title: 

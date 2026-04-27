@@ -15,6 +15,9 @@ public class ArduinoManager : MonoBehaviour
     public bool ButtonDown { get; private set; }
     public bool SwitchOn { get; private set; } = false;
 
+    public bool FactPressed { get; private set; }
+    private bool _pendingFact;
+
     private bool _btnPrev;
     private SerialPort _serial;
     private Thread _thread;
@@ -82,6 +85,10 @@ public class ArduinoManager : MonoBehaviour
                 {
                     lock (_lock) { _pendingQuit = true; }
                 }
+                else if (line == "FACT")
+                {
+                    lock (_lock) { _pendingFact = true; }
+                }
             }
             catch (System.TimeoutException) { }
             catch (System.Exception e) { Debug.LogWarning("Serial error: " + e.Message); break; }
@@ -90,6 +97,7 @@ public class ArduinoManager : MonoBehaviour
 
     void Update()
     {
+        FactPressed = false; 
         lock (_lock)
         {
             Direction = _pendingDir;
@@ -98,6 +106,7 @@ public class ArduinoManager : MonoBehaviour
             ButtonPressed = current;
             _btnPrev = current;
             SwitchOn = _pendingSwitch;
+            if (_pendingFact) { FactPressed = true; _pendingFact = false; }
         }
     }
 

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 852190279861686041}
   - component: {fileID: 9043583770068111009}
   - component: {fileID: 4077041793332557360}
+  - component: {fileID: 3574990650838834127}
   m_Layer: 0
   m_Name: POI_poisson
   m_TagString: Untagged
@@ -117,10 +118,10 @@ MonoBehaviour:
     - {fileID: -7196079186728127361, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
     - {fileID: -5413607543357802909, guid: 6713d4536e174b845a75f52b9b3cabfe, type: 3}
     material: {fileID: 2100000, guid: fd988e020cdf60e468b069f6e3b506bf, type: 2}
-    count: 10
+    count: 50
     scaleMinMax: {x: 0.3, y: 0.3}
-    rotationMinMax: {x: 0, y: 0}
-    alignToSurface: 1
+    rotationMinMax: {x: 3, y: 10}
+    alignToSurface: 0
     usePerlinDensity: 0
     perlinFrequency: 0
     perlinDensityMinMax: {x: 0, y: 0}
@@ -129,7 +130,7 @@ MonoBehaviour:
     clusterRadius: 0
     clusterWeight: 0
     snapYawTo90: 0
-    baseRotation: {x: -90, y: 0, z: 0}
+    baseRotation: {x: 0, y: 0, z: 0}
     instanceColors:
     - {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 0}
   worldSeed: 1337
@@ -140,6 +141,21 @@ MonoBehaviour:
   boundsHeight: 30
   isBleachablePOI: 0
   bleachProgress: 0
+--- !u!114 &3574990650838834127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4037662454838956586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b88df39171e14634db8fb5c271ce84c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  factSprite: {fileID: 21300000, guid: a6ab4161608b96149971a310125de3d5, type: 3}
+  fact: 
+  title: 
 --- !u!1 &4744577807444409627
 GameObject:
   m_ObjectHideFlags: 0
